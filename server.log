@@ -1,0 +1,5 @@
+2026-01-25 19:56:47,806 | ERROR | app_logger | Couldn't get user: {e}
+2026-01-25 19:57:31,627 | ERROR | app_logger | Couldn't get user: {e}
+2026-01-25 19:58:15,026 | DEBUG | app_logger | debuggggggggggggggggg
+2026-01-25 19:58:15,027 | ERROR | app_logger | Couldn't get user: {e}
+2026-01-25 20:01:20,312 | DEBUG | app_logger | debug me pls!!! : <sqlalchemy.engine.result.ChunkedIteratorResult object at 0x000001E92B8B1BE0>
