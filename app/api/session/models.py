@@ -9,7 +9,7 @@ class Session(BaseModel):
     location_name: Optional[str] = None
     min_depth: Optional[float] = None
     max_depth: Optional[float] = None
-    isPublic: bool
+    is_public: bool
     free_text: Optional[str] = None
     longest_hold_down_time: Optional[int] = None
     longest_hold_down_depth: Optional[float] = None

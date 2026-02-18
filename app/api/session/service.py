@@ -1,6 +1,6 @@
 from fastapi import Depends
 from typing import List, Optional
-from .models import Session as SessionModel, SessionFilterBy
+from .models import SessionFilterBy
 from app.base import Session as SessionBase
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert
@@ -19,22 +19,35 @@ class SessionService:
         self,
         db: AsyncSession = Depends(DbService.get_db),
         utils=Depends(UtilService),
-        
     ):
         self.db = db
         self.utils = utils
 
     async def get_sessions(
-        self, filterBy: Optional[SessionFilterBy]
+        self, filter_by: Optional[SessionFilterBy]
     ) -> List[SessionBase]:
         query = select(SessionBase)
 
-        if filterBy:
-            condition = self.utils.handle_filter(filterBy, SessionBase)
+        if filter_by:
+            condition = self.utils.handle_filter(filter_by, SessionFilterBy)
             query = query.where(*condition)
 
         result = await self.db.execute(query)
         return result.scalars().all()
+
+    async def add_session(self, session: Session) -> uuid.UUID:
+        try:
+            session_dict = session.model_dump()
+            query = insert(SessionBase).values(**session_dict).returning(SessionBase.id)
+            
+            result = await self.db.execute(query)
+            await self.db.commit()
+            
+            return result.scalar_one()
+        except Exception:
+            app_logger.exception("Error adding session")
+            await self.db.rollback()
+            raise
 
     async def add_session_catch(self, session: Session, catch: Catch) -> uuid.UUID:
         try:
@@ -42,13 +55,15 @@ class SessionService:
                 print(f"catch")
                 # wait to add catch and get id
             session_dict = session.model_dump()
-            query = insert(SessionBase).values(**session_dict).returning(SessionResponse.id)
-            
+            query = insert(SessionBase).values(**session_dict).returning(SessionBase.id)
+
             result = await self.db.execute(query)
             await self.db.commit()
-            
-            return result.scalar_one()
-        except Exception as e:
-            print(f"Couldn't add session")
-            app_logger.error(f"Couldn't add session: {e}")
 
+            return result.scalar_one()
+        except Exception:
+            app_logger.exception("Couldn't add session with catch")
+            await self.db.rollback()
+            raise
+
+    # async def update_session(self, session:Session):
