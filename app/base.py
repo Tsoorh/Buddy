@@ -1,6 +1,6 @@
 import uuid
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import String, Integer, Boolean, Date, Float, func, DATETIME, ForeignKey
+from sqlalchemy import String, Integer, Boolean, Date, Float, func, ForeignKey,DateTime
 from sqlalchemy.types import UUID
 from datetime import date, datetime
 from typing import Optional, List
@@ -41,15 +41,15 @@ class Session(Base):
     date: Mapped[date] = mapped_column(Date, nullable=False)
     min_depth: Mapped[Optional[float]] = mapped_column(Float)
     max_depth: Mapped[Optional[float]] = mapped_column(Float)
-    isPublic: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_public: Mapped[bool] = mapped_column(Boolean, default=False)
     free_text: Mapped[str] = mapped_column(String)
     
     # in seconds
     longest_hold_down_time: Mapped[int] = mapped_column(Integer)
     longest_hold_down_depth: Mapped[int] = mapped_column(Integer)
 
-    entry_time: Mapped[Optional[datetime]] = mapped_column(DATETIME)
-    exit_time: Mapped[Optional[datetime]] = mapped_column(DATETIME)
+    entry_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    exit_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     visibility: Mapped[int] = mapped_column(Integer)
 
     user: Mapped["User"] = relationship(back_populates="sessions")
@@ -69,7 +69,7 @@ class Catch(Base):
     weight: Mapped[Optional[float]] = mapped_column(Float)
     free_text: Mapped[Optional[str]] = mapped_column(String)
     image: Mapped[Optional[str]] = mapped_column(String(100))
-    catch_time: Mapped[Optional[datetime]] = mapped_column(DATETIME)
+    catch_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
     session: Mapped["Session"] = relationship(back_populates="catches")
     user: Mapped["User"] = relationship(back_populates="catches")
