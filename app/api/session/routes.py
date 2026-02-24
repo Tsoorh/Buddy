@@ -26,7 +26,7 @@ async def get_sessions(
         location_name=location_name,
         min_depth=min_depth,
         max_depth=max_depth,
-        date=date,
+        date=date
     )
     return await controller.get_sessions(filter_by)
 
