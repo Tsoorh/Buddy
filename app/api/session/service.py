@@ -31,9 +31,12 @@ class SessionService:
         if filter_by:
             condition = self.utils.handle_filter(filter_by, SessionFilterBy)
             query = query.where(*condition)
-
-        result = await self.db.execute(query)
-        return result.scalars().all()
+        try:
+            result = await self.db.execute(query)
+            return result.scalars().all()
+        except Exception:
+            app_logger.exception("Error fetching sessions")
+            raise
 
     async def add_session(self, session: Session) -> uuid.UUID:
         try:
@@ -66,4 +69,38 @@ class SessionService:
             await self.db.rollback()
             raise
 
-    # async def update_session(self, session:Session):
+    async def update_session(self, session:Session):
+        try:
+            query = select(SessionBase).where(SessionBase.id == session.id)
+            result = await self.db.execute(query)
+            existing_session = result.scalar_one_or_none()
+
+            if existing_session:
+                for key, value in session.model_dump().items():
+                    setattr(existing_session, key, value)
+
+                await self.db.commit()
+                return True
+            else:
+                return False
+        except Exception:
+            app_logger.exception("Error updating session")
+            await self.db.rollback()
+            raise
+
+    async def delete_session(self, session_id: uuid.UUID):
+        try:
+            query = select(SessionBase).where(SessionBase.id == session_id)
+            result = await self.db.execute(query)
+            session = result.scalar_one_or_none()
+
+            if session:
+                await self.db.delete(session)
+                await self.db.commit()
+                return True
+            else:
+                return False
+        except Exception:
+            app_logger.exception("Error deleting session")
+            await self.db.rollback()
+            raise

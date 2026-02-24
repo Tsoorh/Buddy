@@ -1,0 +1,36 @@
+services:
+  web:
+    build: .
+    container_name: buddy_web
+    command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      -APP_ENV=development
+      - DB_URL=postgresql+asyncpg://postgres:tsoorielks12@db:5432/Spear
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16
+    container_name: buddy_db
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=tsoorielks12
+      - POSTGRES_DB=Spear
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d Spear"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+# postgres data is stored in a named volume called postgres_data.
+volumes:
+  postgres_data:

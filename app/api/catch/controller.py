@@ -21,5 +21,13 @@ class CatchController:
             raise HTTPException(status_code=500, detail="Internal server error while trying to add catch")
         
     async def update_catch(self,catch_id:uuid.UUID,catch:Catch) -> None :
-        if not catch_id:
-            raise catch_id
+        try:
+            await self.service.update_catch(catch_id,catch)
+        except Exception:
+            raise HTTPException(status_code=500, detail="Internal server error while trying to update catch")
+    
+    async def delete_catch(self,catch_id:uuid.UUID) -> None : 
+        try:
+            await self.service.delete_catch(catch_id)
+        except Exception:
+            raise HTTPException(status_code=500, detail="Internal server error while trying to delete catch")

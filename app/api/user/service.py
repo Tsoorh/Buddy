@@ -20,8 +20,8 @@ class UserService:
             result = await self.db.execute(query)
             return result.scalars().all()
         except Exception as e:
-            print(f"Error getting users: {e}")
-            return {"status": "error", "message": str(e)}
+            app_logger.error(f"Error getting users: {e}")
+            raise e
 
     async def get_user_by_username(self, username: str) -> UserResponse:
         try:
@@ -57,5 +57,3 @@ class UserService:
         except Exception as e:
             print(f"Error getting username: {e}")
             return {"status": "error", "message": str(e)}
-
-

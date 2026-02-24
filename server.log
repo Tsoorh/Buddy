@@ -17,3 +17,11 @@ HINT:  You will need to rewrite or cast the expression.
 [SQL: INSERT INTO session (id, user_id, location_name, min_depth, max_depth, is_public, free_text, longest_hold_down_time, longest_hold_down_depth, entry_time, exit_time, visibility) VALUES ($1::UUID, $2::UUID, $3::VARCHAR, $4::FLOAT, $5::FLOAT, $6::BOOLEAN, $7::VARCHAR, $8::INTEGER, $9::INTEGER, $10::TIMESTAMP WITHOUT TIME ZONE, $11::TIMESTAMP WITHOUT TIME ZONE, $12::INTEGER) RETURNING session.id]
 [parameters: (UUID('5970d5db-3851-4ad1-b3df-a17e299114da'), UUID('df1ea1ca-d811-4ca1-9298-d4a38288c5d1'), 'Hadera', 12.0, 15.0, True, 'many spanish mackro', 80, 15.0, datetime.datetime(2026, 2, 16, 8, 0, tzinfo=datetime.timezone.utc), datetime.datetime(2026, 2, 16, 12, 0, tzinfo=datetime.timezone.utc), 10)]
 (Background on this error at: https://sqlalche.me/e/20/dbapi)
+2026-02-22 16:13:08,612 | ERROR | app_logger | Error getting users: (sqlalchemy.dialects.postgresql.asyncpg.InterfaceError) <class 'asyncpg.exceptions._base.InterfaceError'>: connection is closed
+[SQL: SELECT "user".id, "user".first_name, "user".last_name, "user".birthday, "user".user_name, "user".password, "user".is_admin, "user".joined_at, "user".email, "user".experience_years 
+FROM "user"]
+(Background on this error at: https://sqlalche.me/e/20/rvf5)
+2026-02-23 14:30:40,545 | ERROR | app_logger | Error getting users: (sqlalchemy.dialects.postgresql.asyncpg.InvalidCachedStatementError) <class 'asyncpg.exceptions.InvalidCachedStatementError'>: cached statement plan is invalid due to a database schema or configuration change (SQLAlchemy asyncpg dialect will now invalidate all prepared caches in response to this exception)
+[SQL: SELECT "user".id, "user".first_name, "user".last_name, "user".birthday, "user".user_name, "user".password, "user".is_admin, "user".joined_at, "user".email, "user".experience_years 
+FROM "user"]
+(Background on this error at: https://sqlalche.me/e/20/tw8g)
