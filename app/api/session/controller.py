@@ -32,3 +32,16 @@ class SessionController:
             return await self.service.add_session(session)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Couldn't add session: {e}")
+
+    async def add_session_catch(self, session: Session, catch: Catch) -> uuid.UUID:
+        if not session:
+            raise HTTPException(status_code=400, detail="Couldn't get session to add")
+        if session.user_id:
+            # Assuming UserService.get_user_by_id is a static method or properly handled
+            id_exist = await UserService.get_user_by_id(UserService,session.user_id)
+            if not id_exist:
+                raise HTTPException(status_code=404, detail="Couldn't find user")
+        try:
+            return await self.service.add_session_catch(session, catch)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Couldn't add session with catch: {e}")

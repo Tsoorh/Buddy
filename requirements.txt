@@ -1,7 +1,9 @@
 fastapi
 uvicorn
+sqlalchemy
+asyncpg
 pydantic
 pydantic[email]
 pydantic-settings
-sqlalchemy
-asyncpg
+python-dotenv
+alembic

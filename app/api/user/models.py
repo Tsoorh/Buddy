@@ -1,9 +1,10 @@
-from pydantic import BaseModel, EmailStr, UUID4,field_validator,Field
+from pydantic import BaseModel, EmailStr, UUID4, field_validator, Field, ConfigDict
 from datetime import date, datetime
 
 
 # user
 class User(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     first_name:str
     last_name:str
     birthday:date
