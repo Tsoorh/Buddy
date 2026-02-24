@@ -8,7 +8,6 @@ services:
     volumes:
       - .:/app
     environment:
-      -APP_ENV=development
       - DB_URL=postgresql+asyncpg://postgres:tsoorielks12@db:5432/Spear
     depends_on:
       db:
