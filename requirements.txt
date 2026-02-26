@@ -7,3 +7,6 @@ pydantic[email]
 pydantic-settings
 python-dotenv
 alembic
+# mcp-setup
+mcp[cli]
+fastmcp

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, UUID4, Field, field_validator, model_validator
 from typing import Optional
 import uuid
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone
 
 
 class Session(BaseModel):
@@ -19,26 +19,30 @@ class Session(BaseModel):
 
     @model_validator(mode="after")
     def validate_session_logic(self) -> "Session":
-        
+
         # check entry and exit timing
         if self.entry_time and self.exit_time:
             if self.exit_time <= self.entry_time:
                 raise ValueError("Session exit time must be later than entry time")
-        
+
         # check visibility is a positive number
         if self.visibility is not None and self.visibility < 0:
-                raise ValueError("Visibility must be bigger or equal to 0 meters")
-        
+            raise ValueError("Visibility must be bigger or equal to 0 meters")
+
         # check max depth deeper than min depth
         if self.min_depth is not None and self.max_depth is not None:
             if self.max_depth < self.min_depth:
-                raise ValueError("Maximum depth must be bigger or equals to minimum depth")
-        
+                raise ValueError(
+                    "Maximum depth must be bigger or equals to minimum depth"
+                )
+
         # check longest hold-down is not deeper than max depth
         if self.max_depth and self.longest_hold_down_depth:
             if self.longest_hold_down_depth > self.max_depth:
-                raise ValueError("Longest hold down depth could not be deeper then session max depth")
-        
+                raise ValueError(
+                    "Longest hold down depth could not be deeper then session max depth"
+                )
+
         return self
 
     @field_validator("entry_time", "exit_time", mode="after")
@@ -61,5 +65,4 @@ class SessionFilterBy(BaseModel):
     location_name: Optional[str] = None
     min_depth: Optional[float] = None
     max_depth: Optional[float] = None
-    date: Optional[date] = None
-
+    date: Optional[datetime.date] = None
