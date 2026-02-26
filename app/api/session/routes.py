@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from app.api.session.controller import SessionController
+from .controller import SessionController
 from .models import Session, SessionFilterBy
 from app.api.catch.model import Catch
 from typing import List, Optional
@@ -26,14 +26,31 @@ async def get_sessions(
         location_name=location_name,
         min_depth=min_depth,
         max_depth=max_depth,
-        date=date
+        date=date,
     )
     return await controller.get_sessions(filter_by)
 
 
 @router.post("/", response_model=uuid.UUID)
 async def add_session(
-    session: Session,catch:Optional[List[Catch]] = None, controller: SessionController = Depends()
+    session: Session,
+    controller: SessionController = Depends(),
 ) -> uuid.UUID:
     return await controller.add_session(session)
 
+
+@router.post("/{session_id}", response_model=bool)
+async def update_session(
+    session_id: uuid.UUID,
+    session: Session,
+    controller: SessionController = Depends(),
+):
+    return await controller.update_session(session_id, session)
+
+
+@router.delete("/{session_id}", response_model=bool)
+async def delete_session(
+    session_id: uuid.UUID,
+    controller: SessionController = Depends(),
+):
+    return await controller.delete_session(session_id)
