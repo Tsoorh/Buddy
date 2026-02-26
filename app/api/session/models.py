@@ -1,7 +1,7 @@
 from pydantic import BaseModel, UUID4, Field, field_validator, model_validator
 from typing import Optional
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date as date_dt
 
 
 class Session(BaseModel):
@@ -65,4 +65,4 @@ class SessionFilterBy(BaseModel):
     location_name: Optional[str] = None
     min_depth: Optional[float] = None
     max_depth: Optional[float] = None
-    date: Optional[datetime.date] = None
+    date: Optional[date_dt] = None
