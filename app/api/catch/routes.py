@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
-from model import CatchResponse
+from .model import CatchResponse
 from typing import Optional, List
 from pydantic import UUID4
-from service import CatchService
-from controller import CatchController
-from model import CatchFilterBy, Catch
+from .service import CatchService
+from .controller import CatchController
+from .model import CatchFilterBy, Catch
 
 router = APIRouter()
 
@@ -34,7 +34,7 @@ async def add_catch(catch: Catch, controller: CatchController = Depends()) -> UU
 
 
 @router.post("/{catch_id}", response_model=UUID4)  # return the updated catch id
-async def add_catch(
+async def update_catch(
     catch_id: UUID4, catch: Catch, controller: CatchController = Depends()
 ) -> UUID4:
     return await controller.update_catch(catch_id, catch)
