@@ -10,7 +10,9 @@
                 "ms-python.vscode-pylance",
                 "njpwerner.autodocstring",
                 "ckotzbauer.vscode-pg-client",
-                "ms-python.black-formatter"
+                "ms-python.black-formatter",
+                "google.geminicodeassist",
+                "cweijan.vscode-postgresql-client2"
             ],
             "settings": {
                 "[python]": {

@@ -39,7 +39,7 @@ async def add_session(
     return await controller.add_session(session)
 
 
-@router.post("/{session_id}", response_model=bool)
+@router.put("/{session_id}", response_model=bool)
 async def update_session(
     session_id: uuid.UUID,
     session: Session,

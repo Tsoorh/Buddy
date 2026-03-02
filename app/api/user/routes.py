@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from .models import User as UserModel,UserResponse
+from .models import User as UserModel, UserResponse
 from app.api.user.controller import UserController
 from typing import List, Optional
 from .models import createUser
@@ -22,3 +22,10 @@ async def get_user_by_username(username: str, controller: UserController = Depen
 @router.post("/", response_model=uuid.UUID)
 async def add_user(user: createUser, controller: UserController = Depends()):
     return await controller.add_user(user)
+
+
+@router.put("/{user_id}", response_model=uuid.UUID)
+async def update_user(
+    user_id: uuid.UUID, user: createUser, controller: UserController = Depends()
+):
+    return await controller.update_user(user_id, user)
