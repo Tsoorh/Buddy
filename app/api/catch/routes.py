@@ -33,7 +33,7 @@ async def add_catch(catch: Catch, controller: CatchController = Depends()) -> UU
     return await controller.add_catch(catch)
 
 
-@router.post("/{catch_id}", response_model=UUID4)  # return the updated catch id
+@router.put("/{catch_id}", response_model=UUID4)  # return the updated catch id
 async def update_catch(
     catch_id: UUID4, catch: Catch, controller: CatchController = Depends()
 ) -> UUID4:

@@ -6,6 +6,7 @@ from app.service.db_service import DbService
 from app.api.user.routes import router as user_router
 from app.api.session.routes import router as session_router
 from app.api.catch.routes import router as catch_router
+from app.api.authentication.routes import router as auth_router
 
 
 app = FastAPI()
@@ -13,7 +14,8 @@ app = FastAPI()
 
 app.include_router(user_router, prefix="/api/user", tags=["Users"])
 app.include_router(session_router, prefix="/api/session", tags=["Sessions"])
-app.include_router(catch_router, prefix="/api/catch", tags=["Catches"])
+app.include_router(catch_router, prefix="/api/catch", tags=["Cataches"])
+app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
 
 
 @app.get("/test-db")
