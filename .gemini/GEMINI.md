@@ -7,7 +7,7 @@ When responsing always start with Yes Sir!
 ## Planing
 Use the plan folder to write down a plan for solving any task. This will help breaking down the task into smaller steps and explain your reasoning before providing th final answer.
 
-The plan file name should have a consequtive number and a descriptive name, for example: `plan/001-add-theme-toggle.md`.
+The plan file name should have a consequtive number and a descriptive name, for example: `.gemini/plan/001-add-theme-toggle.md`.
 
 Ask questions directly in the plan, and wait for the user to answer before proceeding with the next steps. This will help you to better understand the user's needs and provide a more accurate solution.
 
@@ -15,6 +15,11 @@ For every code that you manage to write - check the right model and base types. 
 
 ## Rules
 The app will use FastAPI as the main framework. All the endpoints should be under `/api` path.
+Every help file with functions to internal use will be a service inside the service folder.
+Always notice where to put the code and locate the files you create in the right way to the project.
+
+## Source
+The base.py contain the base models for the database.
 
 ## API
 use the skill apiLayer.

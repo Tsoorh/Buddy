@@ -24,7 +24,6 @@ class User(Base):
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     joined_at: Mapped[datetime] = mapped_column(Date, server_default=func.now())
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
-    experience_years: Mapped[int] = mapped_column(Integer, nullable=False)
     phone_number: Mapped[str] = mapped_column(String(15), nullable=False)
 
     sessions: Mapped[List["Session"]] = relationship(back_populates="user")

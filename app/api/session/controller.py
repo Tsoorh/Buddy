@@ -8,10 +8,22 @@ import uuid
 
 
 class SessionController:
-    def __init__(self, service: SessionService = Depends()):
+    def __init__(
+        self, service: SessionService = Depends(), userService: UserService = Depends()
+    ):
         self.service = service
+        self.userService = userService
 
     async def get_sessions(self, filter_by: Optional[SessionFilterBy] = None):
+        if filter_by:
+            if (
+                filter_by.max_depth is not None
+                and filter_by.min_depth is not None
+                and filter_by.min_depth > filter_by.max_depth
+            ):
+                raise HTTPException(
+                    status_code=400, detail="min_depth cannot be greater than max_depth"
+                )
         try:
             results = await self.service.get_sessions(filter_by)
             return results
@@ -21,9 +33,9 @@ class SessionController:
     async def add_session(self, session: Session) -> uuid.UUID:
         if not session:
             raise HTTPException(status_code=400, detail="Couldn't get session to add")
-        if session.user_id:
+        if session.user_id is not None:
             # Assuming UserService.get_user_by_id is a static method or properly handled
-            id_exist = await UserService.get_user_by_id(UserService, session.user_id)
+            id_exist = await self.userService.get_user_by_id(session.user_id)
             if not id_exist:
                 raise HTTPException(status_code=404, detail="Couldn't find user")
         try:

@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime, timezone, date as date_dt
 
 
+# Check if should add date field in here!!
 class Session(BaseModel):
     user_id: UUID4
     location_name: Optional[str] = None
@@ -16,6 +17,7 @@ class Session(BaseModel):
     entry_time: Optional[datetime] = Field(default=None)
     exit_time: Optional[datetime] = Field(default=None)
     visibility: Optional[int]
+    date: Optional[date_dt]
 
     @model_validator(mode="after")
     def validate_session_logic(self) -> "Session":
