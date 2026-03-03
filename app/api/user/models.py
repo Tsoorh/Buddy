@@ -11,15 +11,7 @@ class User(BaseModel):
     user_name: str
     is_admin: bool = False
     email: EmailStr
-    experience_years: int = Field()
     phone_number: str = Field()
-
-    @field_validator("experience_years", mode="after")
-    @classmethod
-    def valid_experience_years(cls, v: int) -> int:
-        if v is not None and v < 0:
-            raise ValueError("Years of experience must be 0 or positive")
-        return v
 
     @field_validator("birthday", mode="after")
     @classmethod
@@ -41,6 +33,15 @@ class User(BaseModel):
 class UserResponse(User):
     joined_at: datetime
     id: UUID4
+
+
+class UserUpdate(BaseModel):
+    first_name: str | None = None
+    last_name: str | None = None
+    birthday: date | None = None
+    user_name: str | None = None
+    email: EmailStr | None = None
+    phone_number: str | None = None
 
 
 class createUser(User):

@@ -3,8 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert, update
 from app.service.db_service import DbService
 from app.base import User as UserBase
-from .models import UserResponse, createUser
-from typing import List
+from .models import UserResponse, UserUpdate
+from typing import List, Optional
 import uuid
 from app.core.logger import setup_logger
 
@@ -33,30 +33,19 @@ class UserService:
             app_logger.error(f"Couldn't get user: {e}")
             raise HTTPException(status_code=500, detail="Couldn't get user")
 
-    async def get_user_by_id(self, id: uuid.UUID) -> uuid.UUID:
+    async def get_user_by_id(self, id: uuid.UUID) -> uuid.UUID | None:
         try:
             query = select(UserBase).where(UserBase.id == id)
             result = await self.db.execute(query)
-            return result.scalar_one().id
+            user = result.scalar_one_or_none()
+            return user.id if user else None
         except Exception as e:
-            print(f"Error getting id {e}")
-            return {"status": "error", "message": str(e)}
+            app_logger.error(f"Error getting user by id: {e}")
+            raise HTTPException(status_code=500, detail="Couldn't get user")
 
-    async def create_user(self, user: createUser) -> uuid.UUID:
-        try:
-            user_dict = user.model_dump()
-
-            query = insert(UserBase).values(**user_dict).returning(UserBase.id)
-
-            result = await self.db.execute(query)
-            await self.db.commit()
-
-            return result.scalar_one()
-        except Exception as e:
-            print(f"Error getting username: {e}")
-            return {"status": "error", "message": str(e)}
-
-    async def update_user(self, user_id: uuid.UUID, user: createUser) -> uuid.UUID:
+    async def update_user(
+        self, user_id: uuid.UUID, user: UserUpdate
+    ) -> Optional[uuid.UUID]:
         try:
             user_dict = user.model_dump(exclude_unset=True)
             query = (
@@ -69,7 +58,7 @@ class UserService:
             result = await self.db.execute(query)
             await self.db.commit()
 
-            return result.scalar_one()
+            return result.scalar_one_or_none()
         except Exception as e:
-            print(f"Error updating username: {e}")
-            return {"status": "error", "message": str(e)}
+            app_logger.error(f"Error updating user: {e}")
+            raise HTTPException(status_code=500, detail="Couldn't update user")

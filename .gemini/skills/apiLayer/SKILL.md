@@ -82,10 +82,9 @@ class SessionService:
     def __init__(
         self,
         db: AsyncSession = Depends(DbService.get_db),
-        utils=Depends(UtilService),
     ):
         self.db = db
-        self.utils = utils
+
 
     async def get_sessions(
         self, filter_by: Optional[SessionFilterBy]
@@ -93,7 +92,7 @@ class SessionService:
         query = select(SessionBase)
 
         if filter_by:
-            condition = self.utils.handle_filter(filter_by, SessionFilterBy)
+            condition = self._handle_filter(filter_by, SessionFilterBy)
             query = query.where(*condition)
         try:
             result = await self.db.execute(query)

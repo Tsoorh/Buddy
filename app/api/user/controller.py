@@ -1,7 +1,7 @@
 import uuid
 from fastapi import Depends, HTTPException
 from app.api.user.service import UserService
-from .models import createUser
+from .models import UserUpdate
 
 
 class UserController:
@@ -20,17 +20,11 @@ class UserController:
             return None
         return user
 
-    async def add_user(self, user: createUser):
-        user_id = await self.service.create_user(user)
-        if not user_id:
-            return "Couldn't add user"
-        return user_id
-
-    async def update_user(self, user_id: uuid.UUID, user: createUser):
+    async def update_user(self, user_id: uuid.UUID, user: UserUpdate):
         user_exist = await self.service.get_user_by_id(user_id)
         if not user_exist:
-            return "Couldn't find user to update"
+            raise HTTPException(status_code=404, detail="User not found")
         user_updated = await self.service.update_user(user_id, user)
         if not user_updated:
-            return "Couldn't update user"
+            raise HTTPException(status_code=500, detail="Couldn't update user")
         return user_id

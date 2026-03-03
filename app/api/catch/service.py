@@ -6,7 +6,6 @@ from sqlalchemy import select, insert, Select, or_, update, delete
 from app.base import Catch as CatchBase
 from .model import Catch, CatchFilterBy, CatchResponse
 from typing import List, Optional
-from app.service.util_service import UtilService
 import uuid
 from app.core.logger import setup_logger
 
@@ -14,11 +13,8 @@ app_logger = setup_logger("app_logger")
 
 
 class CatchService:
-    def __init__(
-        self, db: AsyncSession = Depends(DbService.get_db), utils=Depends(UtilService)
-    ):
+    def __init__(self, db: AsyncSession = Depends(DbService.get_db)):
         self.db = db
-        self.utils = utils
 
     # get
     async def get_catches(
