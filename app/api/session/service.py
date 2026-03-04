@@ -1,6 +1,6 @@
 from fastapi import Depends
 from typing import List, Optional
-from .models import SessionFilterBy
+from .models import SessionDetails, SessionFilterBy
 from app.base import Session as SessionBase
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert
@@ -63,7 +63,7 @@ class SessionService:
     #         await self.db.rollback()
     #         raise
 
-    async def update_session(self, session: Session):
+    async def update_session(self, session: SessionDetails):
         try:
             query = select(SessionBase).where(SessionBase.id == session.id)
             result = await self.db.execute(query)

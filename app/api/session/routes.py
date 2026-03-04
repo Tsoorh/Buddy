@@ -3,7 +3,7 @@ from .controller import SessionController
 from .models import Session, SessionFilterBy
 from app.api.catch.model import Catch
 from typing import List, Optional
-from .models import SessionResponse
+from .models import SessionResponse, SessionDetails
 import uuid
 from datetime import date
 from pydantic import UUID4
@@ -42,7 +42,7 @@ async def add_session(
 @router.put("/{session_id}", response_model=bool)
 async def update_session(
     session_id: uuid.UUID,
-    session: Session,
+    session: SessionDetails,
     controller: SessionController = Depends(),
 ):
     return await controller.update_session(session_id, session)
