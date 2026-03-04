@@ -5,8 +5,9 @@ from datetime import datetime, timezone, date as date_dt
 
 
 # Check if should add date field in here!!
-class Session(BaseModel):
-    user_id: UUID4
+
+
+class SessionDetails(BaseModel):
     location_name: Optional[str] = None
     min_depth: Optional[float] = None
     max_depth: Optional[float] = None
@@ -56,6 +57,10 @@ class Session(BaseModel):
         if v.tzinfo is None:
             return v.replace(tzinfo=timezone.utc)
         return v.astimezone(timezone.utc)
+
+
+class Session(SessionDetails):
+    user_id: UUID4
 
 
 class SessionResponse(Session):

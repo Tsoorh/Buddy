@@ -3,7 +3,7 @@ from app.api.session.service import SessionService
 from app.api.catch.model import Catch
 from app.api.user.service import UserService
 from typing import Optional
-from .models import SessionFilterBy, Session
+from .models import SessionFilterBy, Session, SessionDetails
 import uuid
 
 
@@ -43,7 +43,9 @@ class SessionController:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Couldn't add session: {e}")
 
-    async def update_session(self, session_id: uuid.UUID, session: Session) -> bool:
+    async def update_session(
+        self, session_id: uuid.UUID, session: SessionDetails
+    ) -> bool:
         if not session_id:
             raise HTTPException(
                 status_code=400, detail="Couldn't get session id to update"

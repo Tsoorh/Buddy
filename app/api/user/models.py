@@ -16,11 +16,12 @@ class User(BaseModel):
     @field_validator("birthday", mode="after")
     @classmethod
     def valid_birthday(cls, v: date) -> date:
-        if v is not None and v > date.today():
+        if v is None or v > date.today():
             raise ValueError("Birthday can not be a future date")
 
-        if v is not None and v.year < 1900:
+        if v is None or v.year < 1900:
             raise ValueError("Birthday is too far past, are you a Zombie?")
+        return v
 
     @field_validator("phone_number", mode="after")
     @classmethod
