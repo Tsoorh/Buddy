@@ -9,7 +9,7 @@ from .model import CatchFilterBy, Catch
 router = APIRouter()
 
 
-@router.get("/", response_model=CatchResponse)
+@router.get("/", response_model=List[CatchResponse])
 async def get_catches(
     session_id: Optional[UUID4] = None,
     min_weight: Optional[float] = None,
