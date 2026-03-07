@@ -63,9 +63,9 @@ class SessionService:
     #         await self.db.rollback()
     #         raise
 
-    async def update_session(self, session: SessionDetails):
+    async def update_session(self, session_id: uuid.UUID, session: SessionDetails):
         try:
-            query = select(SessionBase).where(SessionBase.id == session.id)
+            query = select(SessionBase).where(SessionBase.id == session_id)
             result = await self.db.execute(query)
             existing_session = result.scalar_one_or_none()
 

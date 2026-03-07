@@ -16,7 +16,6 @@ class CatchService:
     def __init__(self, db: AsyncSession = Depends(DbService.get_db)):
         self.db = db
 
-    # get
     async def get_catches(
         self, filter_by: Optional[CatchFilterBy]
     ) -> List[CatchResponse]:

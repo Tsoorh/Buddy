@@ -55,7 +55,7 @@ class SessionController:
                 status_code=400, detail="Couldn't get the new session to update"
             )
         try:
-            return await self.update_session(session_id, session)
+            return await self.service.update_session(session_id, session)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Couldn't update session: {e}")
 
@@ -65,6 +65,6 @@ class SessionController:
                 status_code=400, detail="Couldn't get session to remove"
             )
         try:
-            return await self.delete_session(session_id)
+            return await self.service.delete_session(session_id)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Couldn't delete session: {e}")
