@@ -9,10 +9,7 @@ class AuthenticationController:
         self.service = service
 
     async def register(self, user: createUser):
-        user_id = await self.service.register(user)
-        if not user_id:
-            return "Couldn't add user"
-        return user_id
+        return await self.service.register(user)
 
     async def login(self, user: Login):
         token = await self.service.login(user)

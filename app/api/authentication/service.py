@@ -1,20 +1,19 @@
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert
 from app.service.db_service import DbService
 from app.base import User as UserBase
 from app.api.user.models import createUser
+from sqlalchemy.exc import IntegrityError
 from .models import Login
-from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta
 from app.core.config import settings
 from app.core.logger import setup_logger
 import uuid
+import bcrypt
 
 app_logger = setup_logger("app_logger")
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class AuthenticationService:
@@ -22,10 +21,17 @@ class AuthenticationService:
         self.db = db
 
     def _verify_password(self, plain_password, hashed_password):
-        return pwd_context.verify(plain_password, hashed_password)
+        password_byte_enc = plain_password[:72].encode("utf-8")
+        hashed_password_byte_enc = hashed_password.encode("utf-8")
+        return bcrypt.checkpw(
+            password=password_byte_enc, hashed_password=hashed_password_byte_enc
+        )
 
     def _get_password_hash(self, password):
-        return pwd_context.hash(password)
+        pwd_bytes = password[:72].encode("utf-8")
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(password=pwd_bytes, salt=salt)
+        return hashed_password.decode("utf-8")
 
     def _create_access_token(self, data: dict, expires_delta: timedelta | None = None):
         to_encode = data.copy()
@@ -58,9 +64,19 @@ class AuthenticationService:
             await self.db.commit()
 
             return result.scalar_one()
+        except IntegrityError:
+            await self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User with this information already exists.",
+            )
         except Exception as e:
-            app_logger.error(f"Error getting username: {e}")
-            return {"status": "error", "message": str(e)}
+            await self.db.rollback()
+            app_logger.error(f"Unexpected error during registration: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"An internal error occurred. - {e}",
+            )
 
     async def login(self, user: Login):
         db_user = await self.get_user_by_email(user.email)

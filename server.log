@@ -29,3 +29,17 @@ FROM "user"]
 2026-03-03 15:43:48,293 | ERROR | app_logger | Error getting user by id: type object 'UserService' has no attribute 'db'
 2026-03-03 15:44:06,483 | ERROR | app_logger | Error getting user by id: type object 'UserService' has no attribute 'db'
 2026-03-03 15:44:26,980 | ERROR | app_logger | Error getting user by id: type object 'UserService' has no attribute 'db'
+2026-03-09 16:10:39,547 | ERROR | app_logger | Error getting username: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2026-03-09 16:15:00,095 | ERROR | app_logger | Error registering user: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2026-03-09 16:19:58,721 | ERROR | app_logger | Error registering user: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2026-03-09 16:25:34,199 | ERROR | app_logger | Error registering user: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2026-03-09 16:25:51,528 | ERROR | app_logger | Error registering user: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2026-03-09 16:34:43,845 | ERROR | app_logger | Unexpected error during registration: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2026-03-09 16:35:20,041 | ERROR | app_logger | Unexpected error during registration: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2026-03-09 16:35:44,189 | ERROR | app_logger | Unexpected error during registration: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2026-03-09 16:35:52,940 | ERROR | app_logger | Unexpected error during registration: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2026-03-09 16:40:59,321 | ERROR | app_logger | Unexpected error during registration: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2026-03-09 16:42:06,131 | ERROR | app_logger | Unexpected error during registration: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2026-03-09 16:44:55,761 | ERROR | app_logger | Unexpected error during registration: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2026-03-09 16:45:26,724 | ERROR | app_logger | Unexpected error during registration: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+2026-03-09 16:48:57,517 | ERROR | app_logger | Unexpected error during registration: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
