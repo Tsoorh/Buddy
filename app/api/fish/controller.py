@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException
 from typing import List
 from .service import FishService
-from .models import Fish, FishResponse
+from .model import Fish, FishResponse
 import uuid
 
 
