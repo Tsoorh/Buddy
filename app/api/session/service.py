@@ -3,7 +3,7 @@ from typing import List, Optional
 from .models import SessionDetails, SessionFilterBy
 from app.base import Session as SessionBase
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, insert
+from sqlalchemy import select, insert, delete
 from app.service.db_service import DbService
 from .models import Session
 from app.api.catch.model import Catch
@@ -89,6 +89,15 @@ class SessionService:
             session = result.scalar_one_or_none()
 
             if session:
+                # Delete associated catches
+                delete_catches_query = delete(Catch).where(
+                    Catch.session_id == session_id
+                )
+                catches_result = await self.db.execute(delete_catches_query)
+                app_logger.info(
+                    f"Deleted {catches_result.rowcount} catches for session {session_id}"
+                )
+
                 await self.db.delete(session)
                 await self.db.commit()
                 return True
