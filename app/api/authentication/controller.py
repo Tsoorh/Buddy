@@ -1,7 +1,7 @@
 from fastapi import Depends
 from app.api.authentication.service import AuthenticationService
 from app.api.user.models import createUser
-from .models import Login
+from .models import Login, ForgotPasswordRequest, ResetPasswordRequest
 
 
 class AuthenticationController:
@@ -14,3 +14,9 @@ class AuthenticationController:
     async def login(self, user: Login):
         token = await self.service.login(user)
         return token
+
+    async def forgot_password(self, request: ForgotPasswordRequest):
+        return await self.service.forgot_password(request.email)
+
+    async def reset_password(self, request: ResetPasswordRequest):
+        return await self.service.reset_password(request.token, request.new_password)

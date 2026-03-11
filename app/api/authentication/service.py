@@ -1,7 +1,8 @@
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, insert
+from sqlalchemy import select, insert, update
 from app.service.db_service import DbService
+from app.service.email_service.index import get_email_service
 from app.base import User as UserBase
 from app.api.user.models import createUser
 from sqlalchemy.exc import IntegrityError
@@ -17,8 +18,13 @@ app_logger = setup_logger("app_logger")
 
 
 class AuthenticationService:
-    def __init__(self, db: AsyncSession = Depends(DbService.get_db)):
+    def __init__(
+        self,
+        db: AsyncSession = Depends(DbService.get_db),
+        email_service=Depends(get_email_service),
+    ):
         self.db = db
+        self.email_service = email_service
 
     def _verify_password(self, plain_password, hashed_password):
         password_byte_enc = plain_password[:72].encode("utf-8")
@@ -91,3 +97,46 @@ class AuthenticationService:
             data={"sub": db_user.email}, expires_delta=access_token_expires
         )
         return {"access_token": access_token, "token_type": "bearer"}
+
+    async def forgot_password(self, email: str):
+        user = await self.get_user_by_email(email)
+        if user:
+            expires = timedelta(minutes=15)
+            token = self._create_access_token(
+                data={"sub": user.email, "purpose": "reset_password"},
+                expires_delta=expires,
+            )
+            await self.email_service.send_reset_password_email(user.email, token)
+
+        # Always return a success message to prevent user enumeration
+        return {
+            "message": "If an account with that email exists, a password reset email has been sent."
+        }
+
+    async def reset_password(self, token: str, new_password: str):
+        try:
+            payload = jwt.decode(
+                token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
+            )
+            email = payload.get("sub")
+            purpose = payload.get("purpose")
+            if email is None or purpose != "reset_password":
+                raise HTTPException(status_code=400, detail="Invalid token")
+        except jwt.JWTError:
+            raise HTTPException(status_code=400, detail="Invalid token")
+
+        user = await self.get_user_by_email(email)
+        if not user:
+            raise HTTPException(status_code=400, detail="User not found")
+
+        hashed_password = self._get_password_hash(new_password)
+
+        stmt = (
+            update(UserBase)
+            .where(UserBase.email == email)
+            .values(password=hashed_password)
+        )
+        await self.db.execute(stmt)
+        await self.db.commit()
+
+        return {"message": "Password updated successfully"}
