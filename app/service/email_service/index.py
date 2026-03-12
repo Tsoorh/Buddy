@@ -7,7 +7,8 @@ import os
 
 @lru_cache()
 def get_email_service() -> Union[ProdEmailService, DevEmailService]:
-    print("ENVAPP" + os.getenv("APP_ENV"))
     if os.getenv("APP_ENV") == "production":
+        print("Production env")
         return ProdEmailService()
+    print("developement env")
     return DevEmailService()
