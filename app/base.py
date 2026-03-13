@@ -1,6 +1,16 @@
 import uuid
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import String, Integer, Boolean, Date, Float, func, ForeignKey, DateTime
+from sqlalchemy import (
+    String,
+    Integer,
+    Boolean,
+    Date,
+    Float,
+    func,
+    ForeignKey,
+    DateTime,
+    Text,
+)
 from sqlalchemy.types import UUID
 from datetime import date as date_dt, datetime
 from typing import Optional, List
@@ -85,3 +95,73 @@ class Fish(Base):
     en_name: Mapped[str] = mapped_column(String, nullable=False)
 
     catches: Mapped["Catch"] = relationship(back_populates="fish")
+
+
+# chat
+class Guest(Base):
+    __tablename__ = "guest"
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    display_name: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class ChatRoom(Base):
+    __tablename__ = "chat_room"
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    is_group: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    participants: Mapped[List["ChatParticipant"]] = relationship(
+        "ChatParticipant", back_populates="room", cascade="all, delete"
+    )
+    messages: Mapped[List["Message"]] = relationship(
+        "Message", back_populates="room", cascade="all, delete"
+    )
+
+
+class ChatParticipant(Base):
+    __tablename__ = "chat_participant"
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    room_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("chat_room.id"), nullable=False
+    )
+    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("user.id"), nullable=True
+    )
+    guest_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("guest.id"), nullable=True
+    )
+    joined_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    room: Mapped["ChatRoom"] = relationship("ChatRoom", back_populates="participants")
+    user: Mapped[Optional["User"]] = relationship("User", foreign_keys=[user_id])
+    guest: Mapped[Optional["Guest"]] = relationship("Guest", foreign_keys=[guest_id])
+
+
+class Message(Base):
+    __tablename__ = "message"
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    room_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("chat_room.id"), nullable=False
+    )
+    sender_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("user.id"), nullable=True
+    )
+    guest_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("guest.id"), nullable=True
+    )
+    content: Mapped[str] = mapped_column(Text, nullable=False)  # Encrypted content
+    timestamp: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    room: Mapped["ChatRoom"] = relationship("ChatRoom", back_populates="messages")
+    sender: Mapped[Optional["User"]] = relationship("User", foreign_keys=[sender_id])
+    guest: Mapped[Optional["Guest"]] = relationship("Guest", foreign_keys=[guest_id])
