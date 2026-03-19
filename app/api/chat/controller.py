@@ -1,28 +1,28 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.api.chat.service import ChatService
-from app.api.chat.model import GuestCreate, ChatRoomCreate
 import uuid
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.service.db_service import DbService
+from app.api.chat.service import ChatService
+from app.api.chat.models import GuestCreate, RoomCreate
 
 
 class ChatController:
-    @staticmethod
-    async def create_guest(data: GuestCreate, db: AsyncSession):
-        service = ChatService(db)
-        return await service.create_guest(data.display_name)
+    def __init__(self, db: AsyncSession = Depends(DbService.get_db)):
+        self.service = ChatService(db)
 
-    @staticmethod
-    async def create_room(data: ChatRoomCreate, user_id: uuid.UUID, db: AsyncSession):
-        service = ChatService(db)
-        return await service.create_room(
-            data.name, data.is_group, user_id, data.participant_ids
+    async def create_guest(self, data: GuestCreate):
+        return await self.service.create_guest(data.display_name)
+
+    async def create_room(self, data: RoomCreate):
+        return await self.service.create_room(
+            name=data.name,
+            is_group=data.is_group,
+            user_ids=data.participant_user_ids,
+            guest_ids=data.participant_guest_ids,
         )
 
-    @staticmethod
-    async def get_my_rooms(user_id: uuid.UUID, db: AsyncSession):
-        service = ChatService(db)
-        return await service.get_user_rooms(user_id)
+    async def get_rooms(self, user_id: uuid.UUID):
+        return await self.service.get_rooms_for_user(user_id)
 
-    @staticmethod
-    async def get_room_messages(room_id: uuid.UUID, db: AsyncSession):
-        service = ChatService(db)
-        return await service.get_room_messages(room_id)
+    async def get_messages(self, room_id: uuid.UUID):
+        return await self.service.get_messages(room_id)

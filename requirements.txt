@@ -12,5 +12,11 @@ python-jose
 aiosmtplib
 python-socketio
 cryptography
+# Testing
+pytest
+pytest-asyncio
+httpx
+aiosqlite
+aiohttp
 # 
 gemini-cli
