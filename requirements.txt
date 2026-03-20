@@ -12,6 +12,7 @@ python-jose
 aiosmtplib
 python-socketio
 cryptography
+python-multipart
 # Testing
 pytest
 pytest-asyncio

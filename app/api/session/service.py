@@ -1,9 +1,9 @@
 from fastapi import Depends
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from .models import SessionDetails, SessionFilterBy
 from app.base import Session as SessionBase
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, insert, delete
+from sqlalchemy import select, insert, delete, or_
 from app.service.db_service import DbService
 from .models import Session
 from app.api.catch.model import Catch
@@ -18,13 +18,15 @@ class SessionService:
         self.db = db
 
     async def get_sessions(
-        self, filter_by: Optional[SessionFilterBy]
+        self,
+        filter_by: Optional[SessionFilterBy],
+        current_user: Optional[Dict[str, Any]] = None,
     ) -> List[SessionBase | None]:
         query = select(SessionBase)
 
-        if filter_by:
-            condition = self._handle_session_filter(filter_by)
-            query = query.where(*condition)
+        if filter_by or current_user:
+            conditions = self._handle_session_filter(filter_by, current_user)
+            query = query.where(*conditions)
         try:
             result = await self.db.execute(query)
             return result.scalars().all()
@@ -108,19 +110,40 @@ class SessionService:
             await self.db.rollback()
             raise
 
-    def _handle_session_filter(self, filter_by: SessionFilterBy):
+    def _handle_session_filter(
+        self,
+        filter_by: Optional[SessionFilterBy],
+        current_user: Optional[Dict[str, Any]] = None,
+    ):
         conditions = []
-        if filter_by.user_id is not None:
-            conditions.append(SessionBase.user_id == filter_by.user_id)
-        if filter_by.date is not None:
-            conditions.append(SessionBase.date == filter_by.date)
-        if filter_by.location_name is not None:
-            conditions.append(
-                SessionBase.location_name.ilike(f"%{filter_by.location_name}%")
-            )
-        if filter_by.max_depth is not None:
-            conditions.append(SessionBase.min_depth <= filter_by.max_depth)
-        if filter_by.min_depth is not None:
-            conditions.append(SessionBase.max_depth >= filter_by.min_depth)
+
+        if current_user:
+            if not current_user.get("is_admin"):
+                user_id_str = current_user.get("userId") or current_user.get("sub")
+                if user_id_str:
+                    # Only return public sessions OR sessions belonging to the current user
+                    conditions.append(
+                        or_(
+                            SessionBase.is_public == True,
+                            SessionBase.user_id == uuid.UUID(user_id_str),
+                        )
+                    )
+        else:
+            # Public user: return ONLY records where is_public == True
+            conditions.append(SessionBase.is_public == True)
+
+        if filter_by:
+            if filter_by.user_id is not None:
+                conditions.append(SessionBase.user_id == filter_by.user_id)
+            if filter_by.date is not None:
+                conditions.append(SessionBase.date == filter_by.date)
+            if filter_by.location_name is not None:
+                conditions.append(
+                    SessionBase.location_name.ilike(f"%{filter_by.location_name}%")
+                )
+            if filter_by.max_depth is not None:
+                conditions.append(SessionBase.min_depth <= filter_by.max_depth)
+            if filter_by.min_depth is not None:
+                conditions.append(SessionBase.max_depth >= filter_by.min_depth)
 
         return conditions

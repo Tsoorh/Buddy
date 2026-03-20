@@ -3,9 +3,9 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import select, insert, Select, or_, update, delete
-from app.base import Catch as CatchBase
+from app.base import Catch as CatchBase, Session as SessionBase
 from .model import Catch, CatchFilterBy, CatchResponse
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import uuid
 from app.core.logger import setup_logger
 
@@ -17,11 +17,13 @@ class CatchService:
         self.db = db
 
     async def get_catches(
-        self, filter_by: Optional[CatchFilterBy]
+        self,
+        filter_by: Optional[CatchFilterBy],
+        current_user: Optional[Dict[str, Any]] = None,
     ) -> List[CatchResponse]:
         query = select(CatchBase)
-        if filter_by:
-            query = self._handle_catch_filter(query, filter_by)
+        if filter_by or current_user:
+            query = self._handle_catch_filter(query, filter_by, current_user)
         try:
             response = await self.db.execute(query)
             return response.scalars().all()
@@ -89,27 +91,49 @@ class CatchService:
             raise
 
     def _handle_catch_filter(
-        self, query: Select, filter: Optional[CatchFilterBy]
+        self,
+        query: Select,
+        filter: Optional[CatchFilterBy],
+        current_user: Optional[Dict[str, Any]] = None,
     ) -> Select:
         conditions = []
-        if not filter:
-            return query
-        if filter.user_id is not None:
-            conditions.append(CatchBase.user_id == filter.user_id)
-        if filter.session_id is not None:
-            conditions.append(CatchBase.session_id == filter.session_id)
-        if filter.fish_id is not None:
-            conditions.append(CatchBase.fish_id == filter.fish_id)
-        if filter.free_text is not None:
-            search_term = f"%{filter.free_text}%"
-            conditions.append(
-                or_(
-                    CatchBase.free_text.ilike(search_term),
-                    CatchBase.fish.ilike(search_term),
+
+        is_admin = current_user.get("is_admin") if current_user else False
+
+        if not is_admin:
+            query = query.join(SessionBase, CatchBase.session_id == SessionBase.id)
+            if current_user:
+                user_id_str = current_user.get("userId") or current_user.get("sub")
+                if user_id_str:
+                    # Limit catch views to those belonging to public sessions or their own sessions
+                    conditions.append(
+                        or_(
+                            SessionBase.is_public == True,
+                            SessionBase.user_id == uuid.UUID(user_id_str),
+                        )
+                    )
+            else:
+                # Limit catch views for unauthenticated users to public sessions only
+                conditions.append(SessionBase.is_public == True)
+
+        if filter:
+            if filter.user_id is not None:
+                conditions.append(CatchBase.user_id == filter.user_id)
+            if filter.session_id is not None:
+                conditions.append(CatchBase.session_id == filter.session_id)
+            if filter.fish_id is not None:
+                conditions.append(CatchBase.fish_id == filter.fish_id)
+            if filter.free_text is not None:
+                search_term = f"%{filter.free_text}%"
+                conditions.append(
+                    or_(
+                        CatchBase.free_text.ilike(search_term),
+                        CatchBase.fish.ilike(search_term),
+                    )
                 )
-            )
-        if filter.min_weight is not None:
-            conditions.append(CatchBase.weight >= filter.min_weight)
+            if filter.min_weight is not None:
+                conditions.append(CatchBase.weight >= filter.min_weight)
+
         if conditions:
             return query.where(*conditions)
 

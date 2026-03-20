@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException
 from app.api.session.service import SessionService
 from app.api.catch.model import Catch
 from app.api.user.service import UserService
-from typing import Optional
+from typing import Optional, Dict, Any
 from .models import SessionFilterBy, Session, SessionDetails
 import uuid
 
@@ -14,7 +14,11 @@ class SessionController:
         self.service = service
         self.userService = userService
 
-    async def get_sessions(self, filter_by: Optional[SessionFilterBy] = None):
+    async def get_sessions(
+        self,
+        filter_by: Optional[SessionFilterBy] = None,
+        current_user: Optional[Dict[str, Any]] = None,
+    ):
         if filter_by:
             if (
                 filter_by.max_depth is not None
@@ -25,7 +29,7 @@ class SessionController:
                     status_code=400, detail="min_depth cannot be greater than max_depth"
                 )
         try:
-            results = await self.service.get_sessions(filter_by)
+            results = await self.service.get_sessions(filter_by, current_user)
             return results
         except Exception:
             raise HTTPException(status_code=500, detail="Couldn't get sessions")

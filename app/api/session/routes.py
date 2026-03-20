@@ -2,8 +2,13 @@ from fastapi import APIRouter, Depends
 from .controller import SessionController
 from .models import Session, SessionFilterBy
 from app.api.catch.model import Catch
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 from .models import SessionResponse, SessionDetails
+from app.middleware.auth_middleware import (
+    get_current_user,
+    get_optional_current_user,
+    verify_session_owner,
+)
 import uuid
 from datetime import date
 from pydantic import UUID4
@@ -20,6 +25,7 @@ async def get_sessions(
     max_depth: Optional[float] = None,
     date: Optional[date] = None,
     controller: SessionController = Depends(),
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_current_user),
 ) -> List[SessionResponse]:
     filter_by = SessionFilterBy(
         user_id=user_id,
@@ -28,10 +34,10 @@ async def get_sessions(
         max_depth=max_depth,
         date=date,
     )
-    return await controller.get_sessions(filter_by)
+    return await controller.get_sessions(filter_by, current_user)
 
 
-@router.post("/", response_model=uuid.UUID)
+@router.post("/", response_model=uuid.UUID, dependencies=[Depends(get_current_user)])
 async def add_session(
     session: Session,
     controller: SessionController = Depends(),
@@ -39,7 +45,9 @@ async def add_session(
     return await controller.add_session(session)
 
 
-@router.put("/{session_id}", response_model=bool)
+@router.put(
+    "/{session_id}", response_model=bool, dependencies=[Depends(verify_session_owner)]
+)
 async def update_session(
     session_id: uuid.UUID,
     session: SessionDetails,
@@ -48,7 +56,9 @@ async def update_session(
     return await controller.update_session(session_id, session)
 
 
-@router.delete("/{session_id}", response_model=bool)
+@router.delete(
+    "/{session_id}", response_model=bool, dependencies=[Depends(verify_session_owner)]
+)
 async def delete_session(
     session_id: uuid.UUID,
     controller: SessionController = Depends(),
