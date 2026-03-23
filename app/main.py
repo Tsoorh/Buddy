@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Depends
 import socketio
+import asyncio
+from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.base import User as UserBase
@@ -10,11 +12,29 @@ from app.api.catch.routes import router as catch_router
 from app.api.authentication.routes import router as auth_router
 from app.api.fish.routes import router as fish_router
 from app.api.chat.routes import router as chat_router
+from app.api.chat.service import ChatService
 from app.service.socket_service import sio
 
 
-app = FastAPI()
+async def guest_cleanup_task():
+    while True:
+        try:
+            async for db in DbService.get_db():
+                await ChatService.cleanup_old_guests(db)
+                break
+        except Exception as e:
+            print(f"Guest cleanup task failed: {e}")
+        await asyncio.sleep(3600)  # Sleep for 1 hour
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    cleanup_task = asyncio.create_task(guest_cleanup_task())
+    yield
+    cleanup_task.cancel()
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.include_router(user_router, prefix="/api/user", tags=["Users"])
 app.include_router(session_router, prefix="/api/session", tags=["Sessions"])

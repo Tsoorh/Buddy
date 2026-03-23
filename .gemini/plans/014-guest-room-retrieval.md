@@ -22,10 +22,10 @@ Pending Approval
     - Return the list of `RoomResponse` objects.
 
 - [ ] **4. Frontend Integration Guide (Informational)**:
-    - The frontend will need to store the `id` from the `GuestResponse` in `localStorage` upon guest creation.
+    - The frontend will need to store the `id` from the `GuestResponse` in `localStorage` upon guest creation. (add Note # near the route that should remind in on the development of the frontend)
     - On application load, if `localStorage.getItem("guest_id")` exists, the frontend will call the new endpoint to fetch the user's active chats instead of asking them for a display name again.
 
 ## Questions
-1. **Authentication Method:** For the new `GET /api/chat/guest/rooms` endpoint, should we expect a custom header (e.g., `X-Guest-ID: <uuid>`), or would you prefer we issue a JWT token when a guest is created (similar to registered users)?
-2. **Data Cleanup:** Guests are temporary. Do you want to implement a background task now to delete `Guest` records older than 24/48 hours, or should we leave that for a future optimization?
-3. Do you approve this plan to begin coding the backend changes?
+1. **Authentication Method:** For the new `GET /api/chat/guest/rooms` endpoint, should we expect a custom header (e.g., `X-Guest-ID: <uuid>`), or would you prefer we issue a JWT token when a guest is created (similar to registered users)? choose the best practice solution.
+2. **Data Cleanup:** Guests are temporary. Do you want to implement a background task now to delete `Guest` records older than 24/48 hours, or should we leave that for a future optimization? yes. implement a cleanup task. 
+3. Do you approve this plan to begin coding the backend changes? yes run

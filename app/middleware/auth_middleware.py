@@ -145,3 +145,27 @@ async def verify_catch_owner(
         )
 
     return current_user
+
+
+async def get_current_guest(
+    request: Request, token: str = Depends(oauth2_scheme)
+) -> Dict[str, Any]:
+    """
+    Dependency to extract and validate the guest JWT token.
+    """
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate guest credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        guest_id: str = payload.get("guest_id")
+
+        if guest_id is None:
+            raise credentials_exception
+
+        request.state.guest = payload
+        return payload
+    except JWTError:
+        raise credentials_exception

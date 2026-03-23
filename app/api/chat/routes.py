@@ -15,6 +15,7 @@ from app.api.chat.models import (
 from app.service.db_service import DbService
 from app.base import User
 from app.core.config import settings
+from app.middleware.auth_middleware import get_current_guest
 
 router = APIRouter()
 
@@ -45,6 +46,11 @@ async def get_current_user_id(
 
 @router.post("/guest", response_model=GuestResponse)
 async def create_guest(data: GuestCreate, controller: ChatController = Depends()):
+    """
+    Create a temporary guest user.
+    Note for frontend: Store the returned `id` and `access_token` in localStorage.
+    On application load, if `access_token` exists, fetch active chats from `/api/chat/guest/rooms`.
+    """
     return await controller.create_guest(data)
 
 
@@ -63,6 +69,15 @@ async def get_rooms(
     user_id: uuid.UUID = Depends(get_current_user_id),
 ):
     return await controller.get_rooms(user_id)
+
+
+@router.get("/guest/rooms", response_model=list[RoomResponse])
+async def get_guest_rooms(
+    controller: ChatController = Depends(),
+    guest_payload: dict = Depends(get_current_guest),
+):
+    guest_id = uuid.UUID(guest_payload["guest_id"])
+    return await controller.get_guest_rooms(guest_id)
 
 
 @router.get("/{room_id}/messages", response_model=list[MessageResponse])

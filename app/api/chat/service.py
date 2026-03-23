@@ -62,6 +62,15 @@ class ChatService:
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
+    async def get_rooms_for_guest(self, guest_id: uuid.UUID) -> list[ChatRoom]:
+        query = (
+            select(ChatRoom)
+            .join(ChatParticipant)
+            .where(ChatParticipant.guest_id == guest_id)
+        )
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
+
     async def get_messages(self, room_id: uuid.UUID) -> list[Message]:
         query = (
             select(Message)
@@ -98,3 +107,34 @@ class ChatService:
 
         message.content = content
         return message
+
+    @staticmethod
+    async def cleanup_old_guests(db: AsyncSession):
+        from datetime import datetime, timedelta
+        from sqlalchemy import delete, update
+
+        expiration_date = datetime.utcnow() - timedelta(hours=24)
+
+        query = select(Guest.id).where(Guest.created_at < expiration_date)
+        result = await db.execute(query)
+        old_guest_ids = list(result.scalars().all())
+
+        if not old_guest_ids:
+            return
+
+        # Nullify guest references in messages
+        await db.execute(
+            update(Message)
+            .where(Message.guest_id.in_(old_guest_ids))
+            .values(guest_id=None)
+        )
+
+        # Remove guests from chat rooms
+        await db.execute(
+            delete(ChatParticipant).where(ChatParticipant.guest_id.in_(old_guest_ids))
+        )
+
+        # Delete guests
+        await db.execute(delete(Guest).where(Guest.id.in_(old_guest_ids)))
+
+        await db.commit()

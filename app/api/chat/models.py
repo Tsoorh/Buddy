@@ -12,6 +12,7 @@ class GuestResponse(BaseModel):
     id: uuid.UUID
     display_name: str
     created_at: datetime
+    access_token: str
 
 
 class RoomCreate(BaseModel):
