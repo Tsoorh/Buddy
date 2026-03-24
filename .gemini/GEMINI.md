@@ -20,6 +20,10 @@ The app will use FastAPI as the main framework. All the endpoints should be unde
 Every help file with functions to internal use will be a service inside the service folder.
 Always notice where to put the code and locate the files you create in the right way to the project.
 
+## Before implemantation 
+Check that you have the access to all relevant files.
+If needed  - ask to attach the relevant files.
+
 ## Source
 The base.py contain the base models for the database.
 
