@@ -19,8 +19,8 @@ class SessionDetails(BaseModel):
     longest_hold_down_depth: Optional[float] = None
     entry_time: Optional[datetime] = Field(default=None)
     exit_time: Optional[datetime] = Field(default=None)
-    visibility: Optional[int]
-    date: Optional[date_dt]
+    visibility: Optional[int] = None
+    date: Optional[date_dt] = None
 
     @model_validator(mode="after")
     def validate_session_logic(self) -> "Session":
