@@ -14,8 +14,8 @@ from app.base import Session as SessionBase, Catch as CatchBase
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 # In a real environment, these must come from environment variables
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-super-secret-key")
-ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+SECRET_KEY = os.getenv("JWT_SECRET")
+ALGORITHM = os.getenv("JWT_ALGORITHM")
 
 
 async def get_current_user(
