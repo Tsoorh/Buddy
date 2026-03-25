@@ -9,6 +9,8 @@ from datetime import datetime, timezone, date as date_dt
 
 class SessionDetails(BaseModel):
     location_name: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     min_depth: Optional[float] = None
     max_depth: Optional[float] = None
     is_public: bool

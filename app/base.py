@@ -48,6 +48,8 @@ class Session(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("user.id"), nullable=False)
 
     location_name: Mapped[Optional[str]] = mapped_column(String(100))
+    latitude: Mapped[Optional[float]] = mapped_column(Float)
+    longitude: Mapped[Optional[float]] = mapped_column(Float)
     date: Mapped[date_dt] = mapped_column(Date, nullable=False)
     min_depth: Mapped[Optional[float]] = mapped_column(Float)
     max_depth: Mapped[Optional[float]] = mapped_column(Float)
@@ -64,6 +66,9 @@ class Session(Base):
 
     user: Mapped["User"] = relationship(back_populates="sessions")
     catches: Mapped[Optional[List["Catch"]]] = relationship(back_populates="session")
+    environmental_condition: Mapped[Optional["EnvironmentalCondition"]] = relationship(
+        back_populates="session", cascade="all, delete-orphan"
+    )
 
 
 class Catch(Base):
@@ -84,6 +89,34 @@ class Catch(Base):
     session: Mapped["Session"] = relationship(back_populates="catches")
     user: Mapped["User"] = relationship(back_populates="catches")
     fish: Mapped["Fish"] = relationship(back_populates="catches")
+
+
+class EnvironmentalCondition(Base):
+    __tablename__ = "environmental_condition"
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    session_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("session.id"), unique=True, nullable=False
+    )
+
+    weather_status: Mapped[Optional[str]] = mapped_column(String)
+    air_temperature: Mapped[Optional[float]] = mapped_column(Float)
+    water_temperature: Mapped[Optional[float]] = mapped_column(Float)
+    atmospheric_pressure: Mapped[Optional[float]] = mapped_column(Float)
+    moon_phase: Mapped[Optional[str]] = mapped_column(String)
+    wind_speed: Mapped[Optional[float]] = mapped_column(Float)
+    wind_direction: Mapped[Optional[float]] = mapped_column(Float)
+    current_direction: Mapped[Optional[float]] = mapped_column(Float)
+    current_speed: Mapped[Optional[float]] = mapped_column(Float)
+    wave_height: Mapped[Optional[float]] = mapped_column(Float)
+    wave_direction: Mapped[Optional[float]] = mapped_column(Float)
+    tide_status: Mapped[Optional[str]] = mapped_column(String)
+    tide_height: Mapped[Optional[float]] = mapped_column(Float)
+    tide_type: Mapped[Optional[str]] = mapped_column(String)
+    cloud_cover: Mapped[Optional[float]] = mapped_column(Float)
+
+    session: Mapped["Session"] = relationship(back_populates="environmental_condition")
 
 
 class Fish(Base):

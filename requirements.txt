@@ -13,10 +13,10 @@ aiosmtplib
 python-socketio
 cryptography
 python-multipart
+httpx
 # Testing
 pytest
 pytest-asyncio
-httpx
 aiosqlite
 aiohttp
 # 

@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, BackgroundTasks
 from app.api.session.service import SessionService
 from app.api.catch.model import Catch
 from app.api.user.service import UserService
@@ -34,7 +34,9 @@ class SessionController:
         except Exception:
             raise HTTPException(status_code=500, detail="Couldn't get sessions")
 
-    async def add_session(self, session: Session) -> uuid.UUID:
+    async def add_session(
+        self, session: Session, background_tasks: BackgroundTasks
+    ) -> uuid.UUID:
         if not session:
             raise HTTPException(status_code=400, detail="Couldn't get session to add")
         if session.user_id is not None:
@@ -43,7 +45,7 @@ class SessionController:
             if not id_exist:
                 raise HTTPException(status_code=404, detail="Couldn't find user")
         try:
-            return await self.service.add_session(session)
+            return await self.service.add_session(session, background_tasks)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Couldn't add session: {e}")
 

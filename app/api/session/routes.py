@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, BackgroundTasks
 from .controller import SessionController
 from .models import Session, SessionFilterBy
 from app.api.catch.model import Catch
@@ -40,9 +40,10 @@ async def get_sessions(
 @router.post("/", response_model=uuid.UUID, dependencies=[Depends(get_current_user)])
 async def add_session(
     session: Session,
+    background_tasks: BackgroundTasks,
     controller: SessionController = Depends(),
 ) -> uuid.UUID:
-    return await controller.add_session(session)
+    return await controller.add_session(session, background_tasks)
 
 
 @router.put(

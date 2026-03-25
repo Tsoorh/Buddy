@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, BackgroundTasks
 from typing import List, Optional, Dict, Any
 from .models import SessionDetails, SessionFilterBy
 from app.base import Session as SessionBase
@@ -7,6 +7,7 @@ from sqlalchemy import select, insert, delete, or_
 from app.service.db_service import DbService
 from .models import Session
 from app.api.catch.model import Catch
+from app.service.environment_service import EnvironmentService
 from app.core.logger import setup_logger
 import uuid
 
@@ -34,36 +35,32 @@ class SessionService:
             app_logger.exception("Error fetching sessions")
             raise
 
-    async def add_session(self, session: Session) -> uuid.UUID:
+    async def add_session(
+        self, session: Session, background_tasks: BackgroundTasks
+    ) -> uuid.UUID:
         try:
             session_dict = session.model_dump()
             query = insert(SessionBase).values(**session_dict).returning(SessionBase.id)
 
             result = await self.db.execute(query)
+            session_id = result.scalar_one()
             await self.db.commit()
 
-            return result.scalar_one()
+            # Trigger background task for Environmental tracking
+            if session.latitude is not None and session.longitude is not None:
+                background_tasks.add_task(
+                    EnvironmentService.fetch_and_save_conditions,
+                    session_id=session_id,
+                    latitude=session.latitude,
+                    longitude=session.longitude,
+                    entry_time=session.entry_time,
+                )
+
+            return session_id
         except Exception:
             app_logger.exception("Error adding session")
             await self.db.rollback()
             raise
-
-    # async def add_session_catch(self, session: Session, catch: Catch) -> uuid.UUID:
-    #     try:
-    #         if catch:
-    #             print(f"catch")
-    #             # wait to add catch and get id
-    #         session_dict = session.model_dump()
-    #         query = insert(SessionBase).values(**session_dict).returning(SessionBase.id)
-
-    #         result = await self.db.execute(query)
-    #         await self.db.commit()
-
-    #         return result.scalar_one()
-    #     except Exception:
-    #         app_logger.exception("Couldn't add session with catch")
-    #         await self.db.rollback()
-    #         raise
 
     async def update_session(self, session_id: uuid.UUID, session: SessionDetails):
         try:
