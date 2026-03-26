@@ -10,6 +10,7 @@ from sqlalchemy import (
     ForeignKey,
     DateTime,
     Text,
+    JSON,
 )
 from sqlalchemy.types import UUID
 from datetime import date as date_dt, datetime
@@ -69,6 +70,19 @@ class Session(Base):
     environmental_condition: Mapped[Optional["EnvironmentalCondition"]] = relationship(
         back_populates="session", cascade="all, delete-orphan"
     )
+
+
+class UserInsight(Base):
+    __tablename__ = "user_insight"
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("user.id"), nullable=False)
+    insights: Mapped[Optional[List[str]]] = mapped_column(JSON)
+    optimal_conditions: Mapped[Optional[str]] = mapped_column(String)
+    generated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    user: Mapped["User"] = relationship()
 
 
 class Catch(Base):

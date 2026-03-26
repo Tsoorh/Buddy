@@ -12,6 +12,7 @@ from app.api.catch.routes import router as catch_router
 from app.api.authentication.routes import router as auth_router
 from app.api.fish.routes import router as fish_router
 from app.api.chat.routes import router as chat_router
+from app.api.analytics.routes import router as analytics_router
 from app.api.chat.service import ChatService
 from app.service.socket_service import sio
 
@@ -42,6 +43,7 @@ app.include_router(catch_router, prefix="/api/catch", tags=["Cataches"])
 app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(fish_router, prefix="/api/fish", tags=["Fish"])
 app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
+app.include_router(analytics_router, prefix="/api/analytics", tags=["Analytics"])
 
 
 @app.get("/test-db")

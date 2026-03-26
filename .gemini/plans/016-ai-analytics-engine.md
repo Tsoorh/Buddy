@@ -1,36 +1,44 @@
-# Plan: AI-Powered Personalized Fishing Analytics Engine
+# Plan: AI-Powered Personal Fishing Data Analyst
 
 ## Goal
-Replace hardcoded, rule-based environmental analytics with an AI-driven approach. Feed a user's isolated session, catch, and environmental data to a Large Language Model (LLM) to generate highly personalized fishing insights, ideal condition summaries, and predictive suggestions.
+Transform the user's raw fishing history into actionable, data-driven insights. By feeding a Large Language Model (LLM) the correlation between a user's catches and the environmental conditions we've tracked (tides, moon phases, temperature, pressure), the AI will generate personalized conclusions about their unique success patterns.
 
 ## Status
-Pending Approval
+Approved (Refined with Data Correlation focus)
 
 ## Implementation Steps
 
-- [ ] **1. AI Service Integration (`app/service/ai_service.py`)**: 
-    - Create an AI service wrapper.
-    - Choose a provider (e.g., Google Gemini API, OpenAI, or a local open-source model). - suggest free provider.
-    - Implement a method `generate_fishing_insights(user_data_json: str)`.
+- [ ] **1. Database Models (`app/base.py`)**: 
+    - Create a `UserInsight` table to cache the AI's analysis.
+    - **Fields**: `id`, `user_id` (ForeignKey), `insights` (JSON list of conclusions), `optimal_conditions` (String), `generated_at` (DateTime).
+    - Generate an Alembic migration script.
 
-- [ ] **2. Data Aggregation & Isolation (`app/api/analytics/service.py`)**: 
-    - Create a service to aggregate a specific user's data.
-    - **Strict Isolation**: Use the `current_user.id` to fetch ONLY their `Session`, `Catch`, and related `EnvironmentalCondition` data.
-    - Format this data into a minimized, token-efficient JSON string or structured prompt (e.g., "Session 1: 5 catches. Moon: Full. Pressure: 1015. Session 2: 0 catches. Moon: New. Pressure: 1008.").
+- [ ] **2. Data Aggregation Service (`app/api/analytics/service.py`)**: 
+    - Implement a complex query that joins `Session`, `Catch`, and `EnvironmentalCondition` for the `current_user`.
+    - Format this into a "Success Matrix" for the AI. 
+    - **Example Data Structure**:
+      ```json
+      [
+        {"date": "2024-03-25", "catches": 5, "tide": "Rising", "moon": "0.23", "temp": 18.4, "pressure": 998},
+        {"date": "2024-03-10", "catches": 0, "tide": "Falling", "moon": "0.75", "temp": 16.2, "pressure": 1012}
+      ]
+      ```
 
-- [ ] **3. Prompt Engineering**:
-    - Design a strict system prompt for the AI: 
-      *"You are an expert fishing analyst. Analyze the following user data. Identify patterns in weather, moon phases, and tides that correlate with high catch rates or large fish. Respond in JSON format with two keys: `insights` (an array of short string advice) and `optimal_conditions` (a description of the best time for this user to fish)."*
+- [ ] **3. AI Analytical Engine (`app/service/ai_service.py`)**: 
+    - Integrate **Google Gemini API** (Free Tier).
+    - **Prompt Engineering**: 
+      *"You are a Data Analyst for a professional fisherman. Analyze the provided success matrix. Your goal is to find mathematical correlations between environmental factors and catch success. Provide conclusions like 'You caught 67% more fish on rising tides' or 'Your biggest catches correlate with atmospheric pressure below 1005hPa'. Do not give generic advice; only speak about the user's specific data."*
 
-- [ ] **4. Caching Mechanism**:
-    - AI API calls cost money/time. We should not calculate this on every request.
-    - Create a `UserInsights` table (or cache in memory/Redis) that saves the AI response.
-    - Update the insights only when the user logs a *new* session (using a background task) or once a week.
+- [ ] **4. Background Processing Pipeline**:
+    - Modify the `add_session` background task in `app/api/session/service.py`.
+    - After `fetch_and_save_conditions` completes, trigger the AI analysis to refresh the `UserInsight` table.
+    - This ensures the homepage "Insight Scroll" is always ready and up-to-date.
 
 - [ ] **5. API Endpoints (`app/api/analytics/routes.py`)**: 
-    - `GET /api/analytics/insights`: Returns the cached AI-generated insights for the `current_user`.
+    - `GET /api/analytics/insights`: Returns the latest cached record from the `UserInsight` table for the authenticated user.
 
-## Questions
-1. **AI Provider**: Which LLM provider would you like to use? If you want to keep it free/accessible, Google's Gemini API has a generous free tier. Alternatively, OpenAI (ChatGPT) is standard but requires a paid API key.I WANT A FREE PROVIDER : I GUESS use google gemini api.
-2. **Caching**: Do you prefer saving the AI insights in a new database table (e.g., `UserInsights`), or just attaching a JSON column to the existing `User` table to keep it simple?ANS : what is the best practice? 
-3. **Triggering**: Should we re-calculate the AI insights automatically in the background every time a user finishes a new session, or only when they explicitly click a "Generate Insights" button on the UI? when a user is loading the homepage the insights will be there (scrolling).
+## Decisions Made
+1. **AI Provider**: **Google Gemini 1.5 Flash** (High speed, generous free tier).
+2. **Persistence**: Dedicated `UserInsight` table for history and performance.
+3. **Trigger**: Automatic background update after every new session.
+4. **Focus**: Hard stats and correlations (Tides, Moon, Temperature, Pressure vs. Catch Count/Weight).
