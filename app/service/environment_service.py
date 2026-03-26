@@ -107,6 +107,38 @@ class EnvironmentService:
             diff = (entry_time - ref_new_moon).total_seconds() / (24 * 3600)
             moon_phase = (diff % lunar_cycle) / lunar_cycle
 
+            # Tide trend analysis
+            tide_heights = extra_marine_data.get("hourly", {}).get("sea_level_height_msl", [])
+            current_tide = get_val(extra_marine_data, "hourly", "sea_level_height_msl")
+            
+            tide_status = None
+            tide_type = None
+            
+            if tide_heights and current_tide is not None:
+                # 1. Determine Status (Rising vs Falling)
+                prev_index = max(0, time_index - 1)
+                prev_tide = tide_heights[prev_index] if len(tide_heights) > prev_index else None
+                
+                if prev_tide is not None:
+                    if current_tide > prev_tide + 0.005: # 5mm threshold to avoid jitter
+                        tide_status = "Rising"
+                    elif current_tide < prev_tide - 0.005:
+                        tide_status = "Falling"
+                    else:
+                        tide_status = "Slack"
+                
+                # 2. Determine Type (High vs Low vs Normal)
+                max_tide = max(tide_heights)
+                min_tide = min(tide_heights)
+                
+                # If we are within 5cm of the daily extreme, we consider it High/Low tide
+                if abs(current_tide - max_tide) < 0.05:
+                    tide_type = "High"
+                elif abs(current_tide - min_tide) < 0.05:
+                    tide_type = "Low"
+                else:
+                    tide_type = "Normal"
+
             conditions = {
                 "session_id": session_id,
                 "weather_status": str(get_val(weather_data, "hourly", "weathercode")),
@@ -124,7 +156,9 @@ class EnvironmentService:
                 "current_direction": get_val(
                     marine_data, "hourly", "ocean_current_direction"
                 ),
-                "tide_height": get_val(extra_marine_data, "hourly", "sea_level_height_msl"),
+                "tide_height": current_tide,
+                "tide_status": tide_status,
+                "tide_type": tide_type,
                 "water_temperature": get_val(
                     extra_marine_data, "hourly", "sea_surface_temperature"
                 ),
