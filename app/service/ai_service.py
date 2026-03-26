@@ -11,7 +11,10 @@ class AiService:
     def __init__(self):
         if settings.gemini_api_key and settings.gemini_api_key != "YOUR_GEMINI_API_KEY":
             genai.configure(api_key=settings.gemini_api_key)
-            self.model = genai.GenerativeModel("gemini-1.5-flash")
+            self.model = genai.GenerativeModel(
+                model_name="gemini-flash-latest",
+                generation_config={"response_mime_type": "application/json"},
+            )
             self.enabled = True
         else:
             logger.warning(

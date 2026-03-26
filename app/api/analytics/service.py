@@ -19,8 +19,21 @@ class AnalyticsService:
         """
         success_matrix = await self._get_success_matrix(user_id)
         
-        # Call AI service
-        result = await self.ai_service.generate_fishing_insights(success_matrix)
+        # Check minimum requirements: > 1 session AND >= 2 total catches
+        total_sessions = len(success_matrix)
+        total_catches = sum(item['catches'] for item in success_matrix)
+        
+        if total_sessions <= 1 or total_catches < 2:
+            result = {
+                "insights": [
+                    "You're just getting started! To provide accurate insights, I need a bit more of your history.",
+                    "Please collect at least 2 sessions and 2 catches to unlock your personalized data analysis."
+                ],
+                "optimal_conditions": "Logging more successful catches will help me identify your unique patterns."
+            }
+        else:
+            # Call AI service
+            result = await self.ai_service.generate_fishing_insights(success_matrix)
         
         if result:
             # Save or Update cache
