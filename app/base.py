@@ -1,4 +1,5 @@
 import uuid
+import enum
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy import (
     String,
@@ -19,6 +20,11 @@ from typing import Optional, List
 
 class Base(DeclarativeBase):
     pass
+
+
+class MediaType(enum.Enum):
+    PHOTO = "photo"
+    VIDEO = "video"
 
 
 class User(Base):
@@ -97,12 +103,30 @@ class Catch(Base):
     )
     weight: Mapped[Optional[float]] = mapped_column(Float)
     free_text: Mapped[Optional[str]] = mapped_column(String)
-    image: Mapped[Optional[str]] = mapped_column(String(100))
     catch_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
     session: Mapped["Session"] = relationship(back_populates="catches")
     user: Mapped["User"] = relationship(back_populates="catches")
     fish: Mapped["Fish"] = relationship(back_populates="catches")
+    media: Mapped[List["CatchMedia"]] = relationship(
+        back_populates="catch", cascade="all, delete-orphan"
+    )
+
+
+class CatchMedia(Base):
+    __tablename__ = "catch_media"
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    catch_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("catch.id"), nullable=False
+    )
+    file_url: Mapped[str] = mapped_column(String, nullable=False)
+    public_id: Mapped[str] = mapped_column(String, nullable=False)  # For Cloudinary deletion
+    file_type: Mapped[str] = mapped_column(String, nullable=False) # Store enum value as string
+    uploaded_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    catch: Mapped["Catch"] = relationship(back_populates="media")
 
 
 class EnvironmentalCondition(Base):

@@ -19,5 +19,6 @@ pytest
 pytest-asyncio
 aiosqlite
 aiohttp
+cloudinary
 # 
 google-generativeai

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile, File
 from .model import CatchResponse
 from typing import Optional, List, Dict, Any
 from pydantic import UUID4
@@ -6,6 +6,7 @@ from app.middleware.auth_middleware import (
     get_current_user,
     get_optional_current_user,
     verify_catch_owner,
+    verify_media_owner,
 )
 from .service import CatchService
 from .controller import CatchController
@@ -56,4 +57,30 @@ async def update_catch(
 async def delete_catch(
     catch_id: UUID4, controller: CatchController = Depends()
 ) -> UUID4:
-    return await controller.delete_catch(catch_id)
+    await controller.delete_catch(catch_id)
+    return catch_id
+
+
+@router.post(
+    "/{catch_id}/media",
+    response_model=UUID4,
+    dependencies=[Depends(verify_catch_owner)],
+)
+async def add_catch_media(
+    catch_id: UUID4,
+    file: UploadFile = File(...),
+    controller: CatchController = Depends(),
+) -> UUID4:
+    return await controller.add_catch_media(catch_id, file)
+
+
+@router.delete(
+    "/media/{media_id}",
+    response_model=UUID4,
+    dependencies=[Depends(verify_media_owner)],
+)
+async def delete_catch_media(
+    media_id: UUID4, controller: CatchController = Depends()
+) -> UUID4:
+    await controller.delete_catch_media(media_id)
+    return media_id

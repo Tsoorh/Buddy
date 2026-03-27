@@ -1,5 +1,5 @@
 from pydantic import BaseModel, UUID4, Field, field_validator
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 
@@ -9,7 +9,6 @@ class Catch(BaseModel):
     session_id: UUID4
     weight: Optional[float] = Field(default=None)
     free_text: Optional[str] = None
-    image: Optional[str] = None
     catch_time: Optional[datetime] = None
 
     @field_validator("weight", mode="after")
@@ -20,8 +19,16 @@ class Catch(BaseModel):
         return v
 
 
+class CatchMediaResponse(BaseModel):
+    id: UUID4
+    file_url: str
+    file_type: str
+    uploaded_at: datetime
+
+
 class CatchResponse(Catch):
     id: UUID4
+    media: List[CatchMediaResponse] = []
 
 
 class CatchFilterBy(BaseModel):

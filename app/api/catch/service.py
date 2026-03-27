@@ -3,8 +3,10 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import select, insert, Select, or_, update, delete
-from app.base import Catch as CatchBase, Session as SessionBase
+from sqlalchemy.orm import selectinload
+from app.base import Catch as CatchBase, Session as SessionBase, CatchMedia
 from .model import Catch, CatchFilterBy, CatchResponse
+from app.service.file_service import FileService
 from typing import List, Optional, Dict, Any
 import uuid
 from app.core.logger import setup_logger
@@ -21,7 +23,7 @@ class CatchService:
         filter_by: Optional[CatchFilterBy],
         current_user: Optional[Dict[str, Any]] = None,
     ) -> List[CatchResponse]:
-        query = select(CatchBase)
+        query = select(CatchBase).options(selectinload(CatchBase.media))
         if filter_by or current_user:
             query = self._handle_catch_filter(query, filter_by, current_user)
         try:
@@ -75,19 +77,77 @@ class CatchService:
             app_logger.error("No catch to delete")
             raise ValueError("No catch to delete")
 
-        query = delete(CatchBase).where(CatchBase.id == catch_id)
-
         try:
+            # Fetch media keys for Cloudinary cleanup before DB deletion
+            media_query = select(CatchMedia).where(CatchMedia.catch_id == catch_id)
+            media_res = await self.db.execute(media_query)
+            media_list = media_res.scalars().all()
+            
+            # Delete from DB (cascade handles CatchMedia table)
+            query = delete(CatchBase).where(CatchBase.id == catch_id)
             response = await self.db.execute(query)
+            
             if response.rowcount == 0:
                 return False
 
             await self.db.commit()
+            
+            # Cleanup Cloudinary after successful DB commit
+            file_service = FileService()
+            for media in media_list:
+                await file_service.delete_from_cloudinary(media.public_id, media.file_type)
+                
             return True
 
         except SQLAlchemyError:
             await self.db.rollback()
             app_logger.exception("Couldn't delete catch")
+            raise
+
+    async def add_catch_media(
+        self, catch_id: uuid.UUID, file_url: str, public_id: str, file_type: str
+    ) -> uuid.UUID:
+        query = insert(CatchMedia).values(
+            catch_id=catch_id,
+            file_url=file_url,
+            public_id=public_id,
+            file_type=file_type
+        ).returning(CatchMedia.id)
+        
+        try:
+            res = await self.db.execute(query)
+            await self.db.commit()
+            return res.scalar_one()
+        except SQLAlchemyError:
+            await self.db.rollback()
+            app_logger.exception("Couldn't add catch media")
+            raise
+
+    async def delete_catch_media(self, media_id: uuid.UUID) -> bool:
+        try:
+            # Fetch public_id for Cloudinary cleanup
+            query = select(CatchMedia).where(CatchMedia.id == media_id)
+            res = await self.db.execute(query)
+            media = res.scalar_one_or_none()
+            
+            if not media:
+                return False
+                
+            public_id = media.public_id
+            file_type = media.file_type
+            
+            # Delete from DB
+            await self.db.delete(media)
+            await self.db.commit()
+            
+            # Cleanup Cloudinary
+            file_service = FileService()
+            await file_service.delete_from_cloudinary(public_id, file_type)
+            
+            return True
+        except SQLAlchemyError:
+            await self.db.rollback()
+            app_logger.exception("Couldn't delete catch media")
             raise
 
     def _handle_catch_filter(

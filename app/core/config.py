@@ -18,6 +18,16 @@ class Settings(BaseSettings):
     postgres_db: str
     chat_encryption_key: str
     gemini_api_key: str
+
+    # Cloudinary
+    cloudinary_cloud_name: str = ""
+    cloudinary_api_key: str = ""
+    cloudinary_api_secret: str = ""
+
+    # Media settings
+    max_file_size: int = 100 * 1024 * 1024  # 100MB
+    allowed_extensions: list[str] = ["jpg", "jpeg", "png", "mp4", "mov"]
+
     model_config = SettingsConfigDict(env_file=".env")
 
 

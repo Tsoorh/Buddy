@@ -8,7 +8,7 @@ from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.service.db_service import DbService
-from app.base import Session as SessionBase, Catch as CatchBase
+from app.base import Session as SessionBase, Catch as CatchBase, CatchMedia
 
 # Token URL should match the login endpoint where users retrieve their token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
@@ -135,6 +135,41 @@ async def verify_catch_owner(
         )
 
     query = select(CatchBase.user_id).where(CatchBase.id == catch_id)
+    result = await db.execute(query)
+    owner_id = result.scalar_one_or_none()
+
+    if not owner_id or str(owner_id) != str(user_id_str):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to modify this resource",
+        )
+
+    return current_user
+
+
+async def verify_media_owner(
+    media_id: uuid.UUID,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(DbService.get_db),
+) -> Dict[str, Any]:
+    """
+    Dependency to verify if the user owns the media via its parent catch.
+    """
+    if current_user.get("is_admin"):
+        return current_user
+
+    user_id_str = current_user.get("userId") or current_user.get("sub")
+    if not user_id_str:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
+        )
+
+    # Join CatchMedia with Catch to check owner
+    query = (
+        select(CatchBase.user_id)
+        .join(CatchMedia, CatchBase.id == CatchMedia.catch_id)
+        .where(CatchMedia.id == media_id)
+    )
     result = await db.execute(query)
     owner_id = result.scalar_one_or_none()
 
