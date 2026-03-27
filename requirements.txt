@@ -20,4 +20,4 @@ pytest-asyncio
 aiosqlite
 aiohttp
 # 
-gemini-cli
+google-generativeai

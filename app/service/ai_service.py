@@ -1,5 +1,6 @@
 import google.generativeai as genai
 import json
+import asyncio
 from app.core.config import settings
 from app.core.logger import setup_logger
 from typing import List, Dict, Any, Optional
@@ -18,7 +19,7 @@ class AiService:
             self.enabled = True
         else:
             logger.warning(
-                "GEMINI_API_KEY not set. AI Service will operate in mock mode."
+                "GEMINI_API_KEY not set or invalid. AI Service will operate in mock mode."
             )
             self.enabled = False
 
@@ -52,17 +53,16 @@ class AiService:
         2. Conclusions MUST be data-driven (e.g., 'You caught 67% more fish on rising tides').
         3. Identify the 'Optimal Conditions' summary for this specific user.
         4. Be concise. Do not give generic advice.
-        5. Respond ONLY in valid JSON format with keys: "insights" (array of strings) and "optimal_conditions" (string).
+        5. Respond ONLY in valid JSON format with keys:
+           - "insights": an array of strings.
+           - "optimal_conditions": a single concise string.
         """
 
         try:
-            response = self.model.generate_content(prompt)
-            # Clean up potential markdown formatting in response
-            text = response.text.strip()
-            if text.startswith("```json"):
-                text = text.replace("```json", "").replace("```", "").strip()
-
-            return json.loads(text)
+            # For 1.5-flash with response_mime_type: "application/json", 
+            # the response is guaranteed to be JSON.
+            response = await asyncio.to_thread(self.model.generate_content, prompt)
+            return json.loads(response.text)
         except Exception as e:
             logger.error(f"Error generating AI insights: {e}")
             return self._get_mock_insights()
