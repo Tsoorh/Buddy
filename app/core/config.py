@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     max_file_size: int = 100 * 1024 * 1024  # 100MB
     allowed_extensions: list[str] = ["jpg", "jpeg", "png", "mp4", "mov"]
 
+    # Admin
+    email: str
+    password: str
+
     model_config = SettingsConfigDict(env_file=".env")
 
 
