@@ -126,3 +126,13 @@ dmypy.json
 *.swp
 *.swo
 .env
+
+# Frontend
+node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
