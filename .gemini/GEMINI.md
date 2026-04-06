@@ -37,6 +37,7 @@ use the skill serviceLayer.
 -use react router for navigation
 -use bootstrap for styling
 -every design should be responsive for all devices
+-for every design check DESIGN.md to follow the rules.
 
 ## Coding Styles
 -No semicolons in JS unless necessary
