@@ -33,6 +33,11 @@ use the skill apiLayer.
 ## Services Layer
 use the skill serviceLayer.
 
+## Frontend
+-use react router for navigation
+-use bootstrap for styling
+-every design should be responsive for all devices
+
 ## Coding Styles
 -No semicolons in JS unless necessary
 -Use Single quotes in JS
