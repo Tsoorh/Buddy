@@ -1,40 +1,40 @@
 # Plan 004: Dashboard Real Data Integration
 
-This plan outlines the steps to connect the frontend Dashboard to the real backend APIs for AI insights and user catch data, replacing the current mock data.
+This plan outlines the steps to connect the frontend Dashboard to the real backend APIs for AI insights and user catch data, replacing the current mock data and ensuring correct relationships.
 
 ## 1. API Service Layer Additions
 - [ ] Create `frontend/src/services/CatchService.ts`:
-    - Add `getCatchesApi()`: Calls `GET /api/catch/` (optionally passing `user_id` if required, though `get_optional_current_user` in the backend should handle the current user context). This will return an array of `CatchResponse` objects.
+    - Add `getCatchesApi()`: Calls `GET /api/catch/`. 
+    - **Note:** Ensure the backend `CatchResponse` includes the nested fish details. If not, this service must handle fetching fish names from `/api/fish/` by `fish_id`.
 - [ ] Create `frontend/src/services/AnalyticsService.ts`:
-    - Add `getInsightsApi()`: Calls `GET /api/analytics/insights`. This returns the AI-generated insights, including `insights` array and `optimal_conditions`.
+    - Add `getInsightsApi()`: Calls `GET /api/analytics/insights`. Returns AI-generated insights and optimal conditions.
 
 ## 2. Dashboard State & Data Fetching
 - [ ] Update `frontend/src/pages/Dashboard.tsx`:
-    - Introduce `useEffect` to fetch data on component mount.
-    - Add state variables: `catches` (array of `CatchResponse`), `insights` (object/string), `isLoading` (boolean), and `error` (string | null).
-    - Call `CatchService.getCatchesApi()` and `AnalyticsService.getInsightsApi()` concurrently using `Promise.all`.
-    - Handle loading states (e.g., displaying a spinner or skeleton loaders) and error states gracefully.
+    - Implement `useEffect` for initial data load.
+    - Fetch `catches` and `insights` concurrently using `Promise.all`.
+    - Handle loading and error states with appropriate UI feedback (e.g., skeletons).
 
 ## 3. UI Data Binding
 - [ ] **AI Pro Tip Section:**
-    - Replace the mock `insight` state.
-    - Map the fetched `insights.insights[0]` (or a randomly selected one from the array) into the "AI Pro Tip" card.
-    - If no insights exist, gracefully display the fallback message from the backend ("Log your first session...").
+    - Bind to `insights.insights[0]`.
+    - Handle the "No data yet" state with the backend's fallback message.
 - [ ] **Quick Stats Grid:**
-    - **Total Catches:** Compute dynamically from `catches.length`.
-    - **Biggest Fish:** Compute dynamically by finding the maximum `weight` property in the `catches` array (e.g., `Math.max(...catches.map(c => c.weight || 0))`).
-    - *Note:* "Total Sessions" and "Hours Logged" can remain mocked or be hidden until a Session API integration plan is created.
+    - **Total Catches:** `catches.length`.
+    - **Biggest Fish:** `Math.max(...catches.map(c => c.weight || 0))`.
+    - **Mock Stats:** Keep "Total Sessions" and "Hours Logged" as mock data for now.
 - [ ] **Recent Catches Section:**
-    - Map over the `catches` array (sorted by `catch_time` descending, taking the top 4) to render the recent catch cards.
-    - Replace mock species name, weight, and date with real data from each `CatchResponse`.
-    - Render real images if `media` array is present and has `file_url`, otherwise use the fallback icon.
+    - Display the 4 most recent catches.
+    - **Relationship Logic:** Display the fish name (Hebrew/English) retrieved via the `fish_id` relationship.
+    - Display real images from `media[0].file_url` if available.
 
-## 4. Testing & Validation
-- [ ] Verify that an authenticated user sees their specific catches and insights.
-- [ ] Test the "empty state" for a new user with no catches (ensure the UI doesn't break when arrays are empty).
-- [ ] Confirm the loading indicators provide a smooth user experience.
+## 4. Relationship & Validation
+- [ ] Verify that each catch is correctly associated with a session (though Dashboard is read-only, this logic is critical for Plan 005).
+- [ ] Ensure fish names are correctly resolved from the Fish API.
 
 ---
-**Questions for the User:**
-1. Do you want to hide the "Total Sessions" and "Hours Logged" stats for now since we are only fetching catches and insights, or keep them with mock data?
-2. The `CatchResponse` returns `fish_id`. Do we have a `/api/fish/` endpoint implemented to fetch the actual fish species name, or should we use a fallback name/mock for now?
+**Status:** Ready for implementation.
+**Decisions Made:**
+1. "Total Sessions" and "Hours Logged" remain mocked.
+2. Catch display must show fish names from the Fish API relationship.
+3. Catch creation logic (Session first) will be handled in Plan 005.
