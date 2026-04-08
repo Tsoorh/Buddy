@@ -23,7 +23,11 @@ class CatchService:
         filter_by: Optional[CatchFilterBy],
         current_user: Optional[Dict[str, Any]] = None,
     ) -> List[CatchResponse]:
-        query = select(CatchBase).options(selectinload(CatchBase.media))
+        query = select(CatchBase).options(
+            selectinload(CatchBase.media),
+            selectinload(CatchBase.fish),
+            selectinload(CatchBase.session)
+        )
         if filter_by or current_user:
             query = self._handle_catch_filter(query, filter_by, current_user)
         try:

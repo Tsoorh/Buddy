@@ -1,5 +1,6 @@
 import axios from 'axios';
 import HttpService from './HttpService';
+import { type User } from '../context/AuthContext';
 
 const TOKEN_KEY = 'spear_fresh_fish_auth_token';
 const REFRESH_TOKEN_KEY = 'spear_fresh_fish_refresh_token';
@@ -39,27 +40,27 @@ export const AuthService = {
     window.dispatchEvent(event);
   },
 
-  loginApi: async (data: any) => {
+  loginApi: async (data: Record<string, string>): Promise<{ access_token: string, refresh_token: string }> => {
     const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/auth/login`, data);
     return response.data; // { access_token, refresh_token }
   },
 
-  registerApi: async (data: any) => {
+  registerApi: async (data: Record<string, string>): Promise<string> => {
     const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/auth/register`, data);
     return response.data; // User ID
   },
 
-  forgotPasswordApi: async (email: string) => {
+  forgotPasswordApi: async (email: string): Promise<{ message: string }> => {
     const response = await HttpService.post('/auth/forgot-password', { email });
     return response.data;
   },
 
-  resetPasswordApi: async (data: any) => {
+  resetPasswordApi: async (data: Record<string, string>): Promise<{ message: string }> => {
     const response = await HttpService.post('/auth/reset-password', data);
     return response.data;
   },
   
-  getUserInfoApi: async () => {
+  getUserInfoApi: async (): Promise<User> => {
     const response = await HttpService.get('/user/me');
     return response.data;
   }

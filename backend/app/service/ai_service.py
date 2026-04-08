@@ -1,4 +1,5 @@
-import google.genai as genai
+from google import genai
+from google.genai import types
 import json
 import asyncio
 from app.core.config import settings
@@ -11,11 +12,8 @@ logger = setup_logger("ai_logger")
 class AiService:
     def __init__(self):
         if settings.gemini_api_key and settings.gemini_api_key != "YOUR_GEMINI_API_KEY":
-            genai.configure(api_key=settings.gemini_api_key)
-            self.model = genai.GenerativeModel(
-                model_name="gemini-flash-latest",
-                generation_config={"response_mime_type": "application/json"},
-            )
+            self.client = genai.Client(api_key=settings.gemini_api_key)
+            self.model_id = "gemini-2.0-flash" # Use a modern model
             self.enabled = True
         else:
             logger.warning(
@@ -59,9 +57,15 @@ class AiService:
         """
 
         try:
-            # For 1.5-flash with response_mime_type: "application/json",
-            # the response is guaranteed to be JSON.
-            response = await asyncio.to_thread(self.model.generate_content, prompt)
+            # Using asyncio.to_thread for synchronous SDK call
+            response = await asyncio.to_thread(
+                self.client.models.generate_content,
+                model=self.model_id,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type='application/json'
+                )
+            )
             return json.loads(response.text)
         except Exception as e:
             logger.error(f"Error generating AI insights: {e}")

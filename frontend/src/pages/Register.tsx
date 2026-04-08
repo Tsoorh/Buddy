@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
+import type { AxiosError } from 'axios';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -57,8 +58,9 @@ const Register: React.FC = () => {
       
       await AuthService.registerApi(dataToSubmit);
       navigate('/login');
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.detail || "Failed to register. Please try again.";
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<{ detail: string }>;
+      const errorMsg = axiosError.response?.data?.detail || "Failed to register. Please try again.";
       setError(errorMsg);
     } finally {
       setIsLoading(false);

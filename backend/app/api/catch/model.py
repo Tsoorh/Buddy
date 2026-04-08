@@ -26,9 +26,20 @@ class CatchMediaResponse(BaseModel):
     uploaded_at: datetime
 
 
+class FishResponse(BaseModel):
+    id: UUID4
+    he_name: str
+    en_name: str
+
+class SessionInfoResponse(BaseModel):
+    id: UUID4
+    location_name: Optional[str] = None
+
 class CatchResponse(Catch):
     id: UUID4
     media: List[CatchMediaResponse] = []
+    fish: Optional[FishResponse] = None
+    session: Optional[SessionInfoResponse] = None
 
 
 class CatchFilterBy(BaseModel):

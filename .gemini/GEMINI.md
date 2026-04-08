@@ -38,6 +38,7 @@ use the skill serviceLayer.
 -use bootstrap for styling
 -every design should be responsive for all devices
 -for every design check DESIGN.md to follow the rules.
+-Avoid `any` type!
 
 ## Coding Styles
 -No semicolons in JS unless necessary

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
+import type { AxiosError } from 'axios';
 
 const ResetPassword: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -52,8 +53,9 @@ const ResetPassword: React.FC = () => {
       setIsLoading(true);
       await AuthService.resetPasswordApi({ token, new_password: formData.new_password });
       navigate('/login');
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.detail || "Failed to reset password. The token may have expired.";
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<{ detail: string }>;
+      const errorMsg = axiosError.response?.data?.detail || "Failed to reset password. The token may have expired.";
       setError(errorMsg);
     } finally {
       setIsLoading(false);

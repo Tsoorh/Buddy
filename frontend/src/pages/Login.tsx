@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AuthService } from '../services/AuthService';
+import type { AxiosError } from 'axios';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -34,8 +35,9 @@ const Login: React.FC = () => {
       
       login(data.access_token, data.refresh_token, userInfo);
       navigate('/dashboard');
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.detail || "Invalid credentials. Please try again.";
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<{ detail: string }>;
+      const errorMsg = axiosError.response?.data?.detail || "Invalid credentials. Please try again.";
       setError(errorMsg);
     } finally {
       setIsLoading(false);
