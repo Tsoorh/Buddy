@@ -70,7 +70,7 @@ class AiService:
     def _get_mock_insights(self) -> Dict[str, Any]:
         return {
             "insights": [
-                "#1 rule in fishing : Never dive alone, get a buddy!",
+                "#1 rule in fishing : Never dive alone, get a SpearFreshFish buddy!",
                 "#2 rule in fishing : The more you go fishing the more fishes you catch.",
                 "#3 rule in fishing : Off shore winds can be dangerous to go fishing and less productive. Always check the weather forecast.",
             ],

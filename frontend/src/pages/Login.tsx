@@ -8,7 +8,7 @@ const Login: React.FC = () => {
 
   const handleLogin = () => {
     // Mock login
-    login('fake-jwt-token', { id: '1', email: 'user@example.com', name: 'Fishing Buddy' });
+    login('fake-jwt-token', { id: '1', email: 'user@example.com', name: 'SpearFreshFish' });
     navigate('/dashboard');
   };
 

@@ -1,6 +1,7 @@
-# Frontend Design Rules - Buddy
+# Frontend Design Rules - SpearFreshFish
 
-This document defines the visual and interaction standards for the Buddy application. Use these rules when generating new UI components or layouts via Google Stitch or manual implementation.
+This document defines the visual and interaction standards for the SpearFreshFish application.
+ Use these rules when generating new UI components or layouts via Google Stitch or manual implementation.
 
 ## 1. Visual Identity
 - **App Name:** SpearFreshFish - The Ultimate Fishing Companion

@@ -1,7 +1,7 @@
 services:
   web:
     build: ./backend
-    container_name: buddy_web
+    container_name: spearfreshfish_web
     command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
@@ -15,7 +15,7 @@ services:
 
   db:
     image: postgres:16
-    container_name: buddy_db
+    container_name: spearfreshfish_db
     restart: always
     env_file:
       - ./backend/.env
@@ -32,7 +32,7 @@ services:
 # for development
   mailhog:
     image: mailhog/mailhog
-    container_name: buddy_mailhog
+    container_name: spearfreshfish_mailhog
     ports:
       - "1025:1025"
       - "587:587"

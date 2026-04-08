@@ -1,5 +1,5 @@
-const TOKEN_KEY = 'buddy_auth_token';
-const USER_KEY = 'buddy_user';
+const TOKEN_KEY = 'spear_fresh_fish_auth_token';
+const USER_KEY = 'spear_fresh_fish_user';
 
 export const AuthService = {
   setToken: (token: string) => {

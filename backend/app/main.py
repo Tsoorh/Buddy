@@ -35,7 +35,7 @@ async def lifespan(app: FastAPI):
     cleanup_task.cancel()
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(title="SpearFreshFish API", lifespan=lifespan)
 
 app.include_router(user_router, prefix="/api/user", tags=["Users"])
 app.include_router(session_router, prefix="/api/session", tags=["Sessions"])

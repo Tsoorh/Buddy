@@ -1,0 +1,72 @@
+:root {
+  --primary-bg: #0B2D72;
+  --secondary: #0992C2;
+  --accent: #0AC4E0;
+  --neutral: #F6E7BC;
+  --surface: rgba(255, 255, 255, 0.05);
+  --font-heading: 'Montserrat', sans-serif;
+  --font-body: 'Roboto', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  margin: 0;
+  background-color: var(--primary-bg);
+  color: var(--neutral);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+.glass-card {
+  background: var(--surface);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.btn-accent {
+  background-color: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-accent:hover {
+  background-color: #08b3cc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(10, 196, 224, 0.3);
+}
+
+.text-sand {
+  color: var(--neutral);
+}
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding-top: 80px; /* For fixed header */
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}

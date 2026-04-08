@@ -1,6 +1,6 @@
-# Buddy - Frontend Documentation
+# SpearFreshFish - Frontend Documentation
 
-This document provides essential information for frontend developers working on the Buddy application using **React** and **TypeScript**.
+This document provides essential information for frontend developers working on the SpearFreshFish application using **React** and **TypeScript**.
 
 ## 🚀 API Connection
 
@@ -108,7 +108,8 @@ socket.on('new_message', (message) => {
    ```
 2. **Database Migrations** (if needed):
    ```bash
-   docker exec buddy_web alembic upgrade head
+   docker exec spearfreshfish_web alembic upgrade head
+
    ```
 3. **MailHog**: Use for testing password reset emails.
    - UI: [http://localhost:8025](http://localhost:8025)

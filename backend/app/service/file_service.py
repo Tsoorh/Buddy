@@ -40,7 +40,7 @@ class FileService:
         file_type = "video" if resource_type == "video" else "photo"
         
         # Unique folder/public_id
-        folder = f"buddy/catches/{catch_id}"
+        folder = f"spearfreshfish/catches/{catch_id}"
 
         try:
             # Cloudinary upload is blocking, run in thread
