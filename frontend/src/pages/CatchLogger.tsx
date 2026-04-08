@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Fish, Weight, Camera, MapPin, ChevronRight, ChevronLeft, Save, Plus, Loader2, Check } from 'lucide-react';
+import { Fish, Camera, MapPin, ChevronRight, ChevronLeft, Save, Plus, Loader2, Check } from 'lucide-react';
 import { SessionService, type SessionResponse } from '../services/SessionService';
 import { FishService, type FishResponse } from '../services/FishService';
 import { CatchService } from '../services/CatchService';
+import SessionModal from '../cmps/SessionModal';
 import type { AxiosError } from 'axios';
 
 const CatchLogger: React.FC = () => {
@@ -20,60 +21,51 @@ const CatchLogger: React.FC = () => {
 
   // Form State
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
-  const [isCreatingSession, setIsCreatingSession] = useState(false);
-  const [newSession, setNewSession] = useState({
-    location_name: '',
-    is_public: true,
-    date: new Date().toISOString().split('T')[0]
-  });
+  const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
 
   const [catchData, setCatchData] = useState({
     fish_id: '',
     weight: '',
     free_text: '',
-    catch_time: new Date().toISOString().slice(0, 16) // datetime-local format
+    catch_time: new Date().toISOString().slice(0, 16)
   });
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  useEffect(() => {
-    const initData = async () => {
-      try {
-        setIsLoading(true);
-        const [sessionsData, fishData] = await Promise.all([
-          SessionService.getSessionsApi(),
-          FishService.getFishListApi()
-        ]);
-        setSessions(sessionsData);
-        setFishList(fishData);
-        
-        if (sessionsData.length > 0) {
-          setSelectedSessionId(sessionsData[0].id);
-        } else {
-          setIsCreatingSession(true);
-        }
-      } catch (err) {
-        console.error('Failed to load initial data:', err);
-        setError('Failed to load sessions or fish data.');
-      } finally {
-        setIsLoading(false);
+  const fetchInitialData = async () => {
+    try {
+      setIsLoading(true);
+      const [sessionsData, fishData] = await Promise.all([
+        SessionService.getSessionsApi(),
+        FishService.getFishListApi()
+      ]);
+      setSessions(sessionsData);
+      setFishList(fishData);
+      
+      // Auto-select most recent if nothing selected
+      if (sessionsData.length > 0 && !selectedSessionId) {
+        setSelectedSessionId(sessionsData[0].id);
       }
-    };
+    } catch (err) {
+      setError('Failed to load initial data.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    if (user) initData();
+  useEffect(() => {
+    if (user) fetchInitialData();
   }, [user]);
 
   const onHandleNext = () => setStep(s => Math.min(s + 1, 3));
   const onHandleBack = () => setStep(s => Math.max(s - 1, 1));
 
-  const onSelectSession = (id: string) => {
-    setSelectedSessionId(id);
-    setIsCreatingSession(false);
-  };
-
-  const onToggleCreateSession = () => {
-    setIsCreatingSession(!isCreatingSession);
-    if (!isCreatingSession) setSelectedSessionId('');
+  const onSessionCreated = async (sessionId: string) => {
+    // Refresh sessions and select the new one
+    await fetchInitialData();
+    setSelectedSessionId(sessionId);
+    // Move to next step automatically
+    setStep(2);
   };
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,33 +76,21 @@ const CatchLogger: React.FC = () => {
 
   const onHandleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || !selectedSessionId) return;
 
     try {
       setIsLoading(true);
       setError(null);
 
-      let sessionId = selectedSessionId;
-
-      // 1. Create session if needed
-      if (isCreatingSession) {
-        sessionId = await SessionService.addSessionApi({
-          ...newSession,
-          user_id: user.id
-        });
-      }
-
-      // 2. Create catch
       const catchId = await CatchService.addCatchApi({
         user_id: user.id,
-        session_id: sessionId,
+        session_id: selectedSessionId,
         fish_id: catchData.fish_id,
         weight: catchData.weight ? parseFloat(catchData.weight) : null,
         free_text: catchData.free_text,
         catch_time: catchData.catch_time
       });
 
-      // 3. Upload media if selected
       if (selectedFile) {
         await CatchService.addCatchMediaApi(catchId, selectedFile);
       }
@@ -119,7 +99,7 @@ const CatchLogger: React.FC = () => {
       navigate('/dashboard');
     } catch (err: unknown) {
       const axiosError = err as AxiosError<{ detail: string }>;
-      setError(axiosError.response?.data?.detail || "Failed to log catch. Please try again.");
+      setError(axiosError.response?.data?.detail || "Failed to log catch.");
     } finally {
       setIsLoading(false);
     }
@@ -131,68 +111,39 @@ const CatchLogger: React.FC = () => {
         return (
           <div className="animate-fade-in">
             <h4 className="mb-4 d-flex align-items-center gap-2 text-sand">
-              <MapPin color="#0AC4E0" /> Step 1: Session
+              <MapPin color="#0AC4E0" /> Step 1: Select Session
             </h4>
             
-            {!isCreatingSession ? (
-              <>
-                <label className="form-label small opacity-50 text-white">Select Recent Session</label>
-                <div className="d-flex flex-column gap-2 mb-4">
-                  {sessions.map(s => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      className={`btn text-start p-3 glass-card border-0 ${selectedSessionId === s.id ? 'border-accent ring-1' : ''}`}
-                      onClick={() => onSelectSession(s.id)}
-                      style={selectedSessionId === s.id ? { border: '1px solid #0AC4E0' } : {}}
-                    >
-                      <div className="d-flex justify-content-between align-items-center">
-                        <div>
-                          <div className="fw-bold text-white">{s.location_name || 'Unnamed Location'}</div>
-                          <div className="small opacity-50 text-white">{s.date}</div>
-                        </div>
-                        {selectedSessionId === s.id && <Check size={18} color="#0AC4E0" />}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-                <button type="button" className="btn btn-outline-info w-100 py-3 d-flex align-items-center justify-content-center gap-2" onClick={onToggleCreateSession}>
-                  <Plus size={18} /> New Session
+            <label className="form-label small opacity-50 text-white">Your Recent Sessions</label>
+            <div className="d-flex flex-column gap-2 mb-4" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              {sessions.map(s => (
+                <button
+                  key={s.id}
+                  type="button"
+                  className={`btn text-start p-3 glass-card border-0 transition-all ${selectedSessionId === s.id ? 'border-accent ring-1' : ''}`}
+                  onClick={() => setSelectedSessionId(s.id)}
+                  style={selectedSessionId === s.id ? { border: '1px solid #0AC4E0', backgroundColor: 'rgba(10, 196, 224, 0.1)' } : {}}
+                >
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div>
+                      <div className="fw-bold text-white">{s.location_name || 'Unnamed Location'}</div>
+                      <div className="small opacity-50 text-white">{s.date}</div>
+                    </div>
+                    {selectedSessionId === s.id && <Check size={18} color="#0AC4E0" />}
+                  </div>
                 </button>
-              </>
-            ) : (
-              <div className="glass-card p-4 border-accent">
-                <div className="mb-3">
-                  <label className="form-label text-white">Location Name</label>
-                  <input 
-                    type="text" className="form-control auth-input" required
-                    value={newSession.location_name}
-                    onChange={e => setNewSession({...newSession, location_name: e.target.value})}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label text-white">Date</label>
-                  <input 
-                    type="date" className="form-control auth-input" required
-                    value={newSession.date}
-                    onChange={e => setNewSession({...newSession, date: e.target.value})}
-                  />
-                </div>
-                <div className="form-check form-switch mb-4">
-                  <input 
-                    className="form-check-input" type="checkbox" role="switch" id="isPublic" 
-                    checked={newSession.is_public}
-                    onChange={e => setNewSession({...newSession, is_public: e.target.checked})}
-                  />
-                  <label className="form-check-label text-white" htmlFor="isPublic">Public Session</label>
-                </div>
-                {sessions.length > 0 && (
-                  <button type="button" className="btn btn-link text-accent text-decoration-none p-0" onClick={onToggleCreateSession}>
-                    Pick from recent sessions
-                  </button>
-                )}
-              </div>
-            )}
+              ))}
+              {sessions.length === 0 && !isLoading && (
+                <p className="text-center py-3 opacity-50">No sessions found. Create one to start!</p>
+              )}
+            </div>
+
+            <button 
+              type="button" className="btn btn-outline-info w-100 py-3 d-flex align-items-center justify-content-center gap-2" 
+              onClick={() => setIsSessionModalOpen(true)}
+            >
+              <Plus size={18} /> Create New Session
+            </button>
           </div>
         );
       case 2:
@@ -307,7 +258,7 @@ const CatchLogger: React.FC = () => {
                     type="button" 
                     className="btn btn-accent px-4 d-flex align-items-center gap-2"
                     onClick={onHandleNext}
-                    disabled={(step === 1 && !selectedSessionId && (!newSession.location_name || !newSession.date))}
+                    disabled={step === 1 && !selectedSessionId}
                   >
                     Next <ChevronRight size={20} />
                   </button>
@@ -326,6 +277,12 @@ const CatchLogger: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <SessionModal 
+        isOpen={isSessionModalOpen}
+        onClose={() => setIsSessionModalOpen(false)}
+        onSuccess={onSessionCreated}
+      />
     </div>
   );
 };

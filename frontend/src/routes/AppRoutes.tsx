@@ -7,6 +7,9 @@ import ForgotPassword from '../pages/ForgotPassword';
 import ResetPassword from '../pages/ResetPassword';
 import Dashboard from '../pages/Dashboard';
 import CatchLogger from '../pages/CatchLogger';
+import SessionLogger from '../pages/SessionLogger';
+import Catches from '../pages/Catches';
+import Sessions from '../pages/Sessions';
 import { ProtectedRoute, AuthOnlyRoute, PublicRoute } from './Guards';
 
 const AppRoutes: React.FC = () => {
@@ -25,6 +28,9 @@ const AppRoutes: React.FC = () => {
       {/* Protected routes (Accessible by User or Guest) */}
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/catches" element={<Catches />} />
+        <Route path="/sessions" element={<Sessions />} />
+        <Route path="/log-session" element={<SessionLogger />} />
       </Route>
       
       {/* Auth-only routes (No Guests allowed) */}

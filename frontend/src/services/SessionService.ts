@@ -42,5 +42,15 @@ export const SessionService = {
   addSessionApi: async (sessionData: CreateSession): Promise<string> => {
     const response: AxiosResponse<string> = await HttpService.post('/session/', sessionData);
     return response.data;
+  },
+
+  updateSessionApi: async (sessionId: string, sessionData: SessionDetails): Promise<boolean> => {
+    const response: AxiosResponse<boolean> = await HttpService.put(`/session/${sessionId}`, sessionData);
+    return response.data;
+  },
+
+  deleteSessionApi: async (sessionId: string): Promise<boolean> => {
+    const response: AxiosResponse<boolean> = await HttpService.delete(`/session/${sessionId}`);
+    return response.data;
   }
 };

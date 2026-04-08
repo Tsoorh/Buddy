@@ -65,5 +65,20 @@ export const CatchService = {
       },
     });
     return response.data;
+  },
+
+  updateCatchApi: async (catchId: string, catchData: CreateCatch): Promise<string> => {
+    const response: AxiosResponse<string> = await HttpService.put(`/catch/${catchId}`, catchData);
+    return response.data;
+  },
+
+  deleteCatchApi: async (catchId: string): Promise<string> => {
+    const response: AxiosResponse<string> = await HttpService.delete(`/catch/${catchId}`);
+    return response.data;
+  },
+
+  deleteCatchMediaApi: async (mediaId: string): Promise<string> => {
+    const response: AxiosResponse<string> = await HttpService.delete(`/catch/media/${mediaId}`);
+    return response.data;
   }
 };

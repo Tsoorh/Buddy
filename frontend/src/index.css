@@ -126,6 +126,19 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
 }
 
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.section-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
 .main-content {
   padding-top: 100px; /* Space for fixed header */
   min-height: calc(100vh - 100px); /* Adjust min-height to account for header */
@@ -138,6 +151,18 @@ h1, h2, h3, h4, h5, h6 {
 
 .animate-spin {
   animation: spin 1s linear infinite;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.group:hover .group-hover-opacity-100 {
+  opacity: 1 !important;
 }
 
 @keyframes spin {
