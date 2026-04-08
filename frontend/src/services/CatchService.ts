@@ -36,9 +36,34 @@ export interface CatchFilterBy {
   free_text?: string;
 }
 
+export interface CreateCatch {
+  user_id: string;
+  fish_id: string;
+  session_id: string;
+  weight?: number | null;
+  free_text?: string | null;
+  catch_time?: string | null;
+}
+
 export const CatchService = {
   getCatchesApi: async (filters: CatchFilterBy = {}): Promise<CatchResponse[]> => {
     const response: AxiosResponse<CatchResponse[]> = await HttpService.get('/catch/', { params: filters });
+    return response.data;
+  },
+
+  addCatchApi: async (catchData: CreateCatch): Promise<string> => {
+    const response: AxiosResponse<string> = await HttpService.post('/catch/', catchData);
+    return response.data;
+  },
+
+  addCatchMediaApi: async (catchId: string, file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response: AxiosResponse<string> = await HttpService.post(`/catch/${catchId}/media`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   }
 };

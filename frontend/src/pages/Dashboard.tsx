@@ -32,9 +32,9 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="container py-4 ">
+    <div className="container py-4">
       {/* Page Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4 pt-5">
+      <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2 className="mb-1 text-sand">
             Good Morning,{" "}
@@ -109,7 +109,7 @@ const Dashboard: React.FC = () => {
       {/* Statistics Grid */}
       <div className="row g-4 mb-5">
         <StatCard label="Total Catches" value={stats.totalCatches} />
-        <StatCard label="Total Sessions" value={48} />
+        <StatCard label="Total Sessions" value={stats.totalSessions} />
         <StatCard
           label="Biggest Fish"
           value={
@@ -117,7 +117,7 @@ const Dashboard: React.FC = () => {
           }
           icon={<Trophy size={20} color="#0AC4E0" />}
         />
-        <StatCard label="Hours Logged" value="214h" />
+        <StatCard label="Hours Logged" value={`${stats.hoursLogged}h`} />
       </div>
 
       {/* Recent Activity Section */}

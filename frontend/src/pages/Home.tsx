@@ -15,7 +15,7 @@ const Home: React.FC = () => {
   return (
     <div className="container py-5">
       {/* Hero Section */}
-      <section className="row align-items-center mb-5 min-vh-75 pt-4">
+      <section className="row align-items-center mb-5 min-vh-75 ">
         <div className="col-lg-6 mb-4 mb-lg-0 text-center text-lg-start">
           <h1 className="display-3 mb-3" style={{ color: "#F6E7BC" }}>
             The Ultimate <br />{" "}

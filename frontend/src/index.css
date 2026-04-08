@@ -126,6 +126,11 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
 }
 
+.main-content {
+  padding-top: 100px; /* Space for fixed header */
+  min-height: calc(100vh - 100px); /* Adjust min-height to account for header */
+}
+
 /* --- Misc --- */
 .bg-gradient-cyan {
   background: linear-gradient(135deg, rgba(10, 196, 224, 0.2), rgba(11, 45, 114, 0.4));
