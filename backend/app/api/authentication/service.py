@@ -104,7 +104,44 @@ class AuthenticationService:
             },
             expires_delta=access_token_expires,
         )
-        return {"access_token": access_token, "token_type": "bearer"}
+        refresh_token_expires = timedelta(days=7)
+        refresh_token = self._create_access_token(
+            data={"sub": db_user.email, "type": "refresh"},
+            expires_delta=refresh_token_expires,
+        )
+        return {"access_token": access_token, "token_type": "bearer", "refresh_token": refresh_token}
+
+    async def refresh_access_token(self, refresh_token: str):
+        try:
+            payload = jwt.decode(
+                refresh_token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
+            )
+            email = payload.get("sub")
+            token_type = payload.get("type")
+            if email is None or token_type != "refresh":
+                raise HTTPException(status_code=401, detail="Invalid refresh token")
+        except JWTError:
+            raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+        db_user = await self.get_user_by_email(email)
+        if not db_user:
+            raise HTTPException(status_code=401, detail="User not found")
+
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = self._create_access_token(
+            data={
+                "sub": db_user.email,
+                "is_admin": db_user.is_admin,
+                "userId": str(db_user.id),
+            },
+            expires_delta=access_token_expires,
+        )
+        new_refresh_token_expires = timedelta(days=7)
+        new_refresh_token = self._create_access_token(
+            data={"sub": db_user.email, "type": "refresh"},
+            expires_delta=new_refresh_token_expires,
+        )
+        return {"access_token": access_token, "token_type": "bearer", "refresh_token": new_refresh_token}
 
     async def forgot_password(self, email: str):
         user = await self.get_user_by_email(email)

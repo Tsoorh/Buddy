@@ -2,7 +2,7 @@
     "name": "Buddy Dev Container",
     "dockerComposeFile": "../docker-compose.yml",
     "service": "web",
-    "workspaceFolder": "/app",
+    "workspaceFolder": "/workspace",
     "customizations": {
         "vscode": {
             "extensions": [
@@ -12,11 +12,22 @@
                 "ckotzbauer.vscode-pg-client",
                 "ms-python.black-formatter",
                 "google.geminicodeassist",
-                "cweijan.vscode-postgresql-client2"
+                "cweijan.vscode-postgresql-client2",
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode",
+                "dsznajder.es7-react-js-snippets"
             ],
             "settings": {
                 "[python]": {
                     "editor.defaultFormatter": "ms-python.black-formatter",
+                    "editor.formatOnSave": true
+                },
+                "[typescript]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode",
+                    "editor.formatOnSave": true
+                },
+                "[typescriptreact]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode",
                     "editor.formatOnSave": true
                 }
             }
@@ -24,10 +35,14 @@
     },
     "forwardPorts": [
         8000,
+        5173,
         5432
     ],
     "remoteUser": "root",
     "features": {
-        "ghcr.io/devcontainers/features/git:1": {}
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "23"
+        }
     }
 }

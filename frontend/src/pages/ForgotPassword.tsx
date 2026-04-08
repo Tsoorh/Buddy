@@ -1,42 +1,24 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 
-const Login: React.FC = () => {
-  const navigate = useNavigate();
-  const { login } = useAuth();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+const ForgotPassword: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setMessage(null);
 
     try {
       setIsLoading(true);
-      const data = await AuthService.loginApi(formData);
-      
-      // Get user info
-      AuthService.setToken(data.access_token);
-      const userInfo = await AuthService.getUserInfoApi();
-      
-      login(data.access_token, data.refresh_token, userInfo);
-      navigate('/dashboard');
+      await AuthService.forgotPasswordApi(email);
+      setMessage("If an account with that email exists, a password reset email has been sent.");
     } catch (err: any) {
-      const errorMsg = err.response?.data?.detail || "Invalid credentials. Please try again.";
-      setError(errorMsg);
+      setError("An error occurred. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -45,33 +27,31 @@ const Login: React.FC = () => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={styles.title}>SpearFreshFish</h2>
-        <p style={styles.subtitle}>Login to your account</p>
+        <h2 style={styles.title}>Forgot Password</h2>
+        <p style={styles.subtitle}>Enter your email to receive reset instructions.</p>
         
+        {message && <div style={styles.success}>{message}</div>}
         {error && <div style={styles.error}>{error}</div>}
         
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.inputGroup}>
             <label style={styles.label}>Email</label>
-            <input type="email" name="email" required style={styles.input} value={formData.email} onChange={handleChange} />
-          </div>
-          
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Password</label>
-            <input type="password" name="password" required style={styles.input} value={formData.password} onChange={handleChange} />
-          </div>
-          
-          <div style={styles.forgotPassword}>
-             <Link to="/forgot-password" style={styles.link}>Forgot Password?</Link>
+            <input 
+              type="email" 
+              required 
+              style={styles.input} 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+            />
           </div>
 
           <button type="submit" style={styles.button} disabled={isLoading}>
-            {isLoading ? 'Logging in...' : 'Login'}
+            {isLoading ? 'Sending...' : 'Send Reset Link'}
           </button>
         </form>
         
         <p style={styles.footerText}>
-          Don't have an account? <Link to="/register" style={styles.link}>Register here</Link>
+          Remember your password? <Link to="/login" style={styles.link}>Login here</Link>
         </p>
       </div>
     </div>
@@ -101,7 +81,7 @@ const styles = {
   },
   title: {
     fontFamily: 'Montserrat, sans-serif',
-    fontSize: '2.2rem',
+    fontSize: '2rem',
     fontWeight: 'bold',
     textAlign: 'center' as const,
     marginBottom: '0.5rem',
@@ -135,11 +115,6 @@ const styles = {
     outline: 'none',
     fontSize: '1rem',
   },
-  forgotPassword: {
-    textAlign: 'right' as const,
-    fontSize: '0.85rem',
-    marginTop: '-0.5rem'
-  },
   button: {
     marginTop: '1rem',
     padding: '1rem',
@@ -151,6 +126,15 @@ const styles = {
     fontWeight: 'bold',
     cursor: 'pointer',
     transition: 'background-color 0.2s',
+  },
+  success: {
+    backgroundColor: 'rgba(0, 255, 0, 0.1)',
+    border: '1px solid #0AC4E0',
+    color: '#0AC4E0',
+    padding: '1rem',
+    borderRadius: '8px',
+    marginBottom: '1.5rem',
+    textAlign: 'center' as const
   },
   error: {
     backgroundColor: 'rgba(255, 0, 0, 0.1)',
@@ -173,4 +157,4 @@ const styles = {
   }
 };
 
-export default Login;
+export default ForgotPassword;

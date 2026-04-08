@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 import socketio
 import asyncio
 from contextlib import asynccontextmanager
@@ -36,6 +37,14 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="SpearFreshFish API", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(user_router, prefix="/api/user", tags=["Users"])
 app.include_router(session_router, prefix="/api/session", tags=["Sessions"])

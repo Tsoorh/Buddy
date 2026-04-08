@@ -1,10 +1,16 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Anchor, BarChart3, BrainCircuit, Waves } from 'lucide-react';
 
 const Home: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isGuest, continueAsGuest } = useAuth();
+  const navigate = useNavigate();
+
+  const handleGuestLogin = () => {
+    continueAsGuest();
+    navigate('/dashboard');
+  };
 
   return (
     <div className="container py-5">
@@ -18,13 +24,18 @@ const Home: React.FC = () => {
             Track your catches, analyze environmental data, and unlock AI-powered insights to catch more fish.
           </p>
           <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
-            <Link to={user ? "/dashboard" : "/login"} className="btn btn-accent btn-lg px-5 py-3 shadow">
-              {user ? "Go to Dashboard" : "Get Started Now"}
+            <Link to={user || isGuest ? "/dashboard" : "/login"} className="btn btn-accent btn-lg px-5 py-3 shadow">
+              {user || isGuest ? "Go to Dashboard" : "Get Started Now"}
             </Link>
-            {!user && (
-              <Link to="/register" className="btn btn-outline-light btn-lg px-5 py-3">
-                Create Account
-              </Link>
+            {!user && !isGuest && (
+              <>
+                <Link to="/register" className="btn btn-outline-light btn-lg px-5 py-3">
+                  Create Account
+                </Link>
+                <button onClick={handleGuestLogin} className="btn btn-outline-info btn-lg px-5 py-3">
+                  Continue as Guest
+                </button>
+              </>
             )}
           </div>
         </div>

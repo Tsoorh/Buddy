@@ -1,4 +1,4 @@
-import google.generativeai as genai
+import google.genai as genai
 import json
 import asyncio
 from app.core.config import settings
@@ -59,7 +59,7 @@ class AiService:
         """
 
         try:
-            # For 1.5-flash with response_mime_type: "application/json", 
+            # For 1.5-flash with response_mime_type: "application/json",
             # the response is guaranteed to be JSON.
             response = await asyncio.to_thread(self.model.generate_content, prompt)
             return json.loads(response.text)

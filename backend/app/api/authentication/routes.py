@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
-from .models import Token, Login, ForgotPasswordRequest, ResetPasswordRequest
+from .models import Token, Login, ForgotPasswordRequest, ResetPasswordRequest, RefreshTokenRequest
 from app.api.authentication.controller import AuthenticationController
 from app.api.user.models import createUser
 import uuid
@@ -19,8 +19,16 @@ async def login(user: Login, controller: AuthenticationController = Depends()):
     return await controller.login(user)
 
 
+@router.post("/refresh", response_model=Token)
+async def refresh_access_token(
+    request: RefreshTokenRequest, controller: AuthenticationController = Depends()
+):
+    return await controller.refresh_access_token(request)
+
+
 @router.post("/login/swagger", response_model=Token, summary="Swagger UI Login")
 async def swagger_login(
+
     form_data: OAuth2PasswordRequestForm = Depends(),
     controller: AuthenticationController = Depends(),
 ):

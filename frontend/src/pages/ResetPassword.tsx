@@ -1,17 +1,29 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 
-const Login: React.FC = () => {
+const ResetPassword: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
   const navigate = useNavigate();
-  const { login } = useAuth();
+
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    new_password: '',
+    confirm_password: ''
   });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!token) {
+      setError("Invalid or missing reset token.");
+    }
+  }, [token]);
+
+  const validatePassword = (password: string) => {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return regex.test(password);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -24,18 +36,24 @@ const Login: React.FC = () => {
     e.preventDefault();
     setError(null);
 
+    if (!token) return;
+
+    if (formData.new_password !== formData.confirm_password) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    if (!validatePassword(formData.new_password)) {
+      setError("Password must contain at least one uppercase letter, one lowercase letter, one number, and be at least 8 characters long.");
+      return;
+    }
+
     try {
       setIsLoading(true);
-      const data = await AuthService.loginApi(formData);
-      
-      // Get user info
-      AuthService.setToken(data.access_token);
-      const userInfo = await AuthService.getUserInfoApi();
-      
-      login(data.access_token, data.refresh_token, userInfo);
-      navigate('/dashboard');
+      await AuthService.resetPasswordApi({ token, new_password: formData.new_password });
+      navigate('/login');
     } catch (err: any) {
-      const errorMsg = err.response?.data?.detail || "Invalid credentials. Please try again.";
+      const errorMsg = err.response?.data?.detail || "Failed to reset password. The token may have expired.";
       setError(errorMsg);
     } finally {
       setIsLoading(false);
@@ -45,34 +63,43 @@ const Login: React.FC = () => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={styles.title}>SpearFreshFish</h2>
-        <p style={styles.subtitle}>Login to your account</p>
+        <h2 style={styles.title}>Reset Password</h2>
+        <p style={styles.subtitle}>Enter your new password below.</p>
         
         {error && <div style={styles.error}>{error}</div>}
         
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Email</label>
-            <input type="email" name="email" required style={styles.input} value={formData.email} onChange={handleChange} />
+            <label style={styles.label}>New Password</label>
+            <input 
+              type="password" 
+              name="new_password" 
+              required 
+              style={styles.input} 
+              value={formData.new_password} 
+              onChange={handleChange} 
+              disabled={!token}
+            />
+            <small style={styles.hint}>Min 8 chars, 1 uppercase, 1 lowercase, 1 number.</small>
           </div>
           
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Password</label>
-            <input type="password" name="password" required style={styles.input} value={formData.password} onChange={handleChange} />
-          </div>
-          
-          <div style={styles.forgotPassword}>
-             <Link to="/forgot-password" style={styles.link}>Forgot Password?</Link>
+            <label style={styles.label}>Confirm Password</label>
+            <input 
+              type="password" 
+              name="confirm_password" 
+              required 
+              style={styles.input} 
+              value={formData.confirm_password} 
+              onChange={handleChange} 
+              disabled={!token}
+            />
           </div>
 
-          <button type="submit" style={styles.button} disabled={isLoading}>
-            {isLoading ? 'Logging in...' : 'Login'}
+          <button type="submit" style={styles.button} disabled={isLoading || !token}>
+            {isLoading ? 'Resetting...' : 'Reset Password'}
           </button>
         </form>
-        
-        <p style={styles.footerText}>
-          Don't have an account? <Link to="/register" style={styles.link}>Register here</Link>
-        </p>
       </div>
     </div>
   );
@@ -101,7 +128,7 @@ const styles = {
   },
   title: {
     fontFamily: 'Montserrat, sans-serif',
-    fontSize: '2.2rem',
+    fontSize: '2rem',
     fontWeight: 'bold',
     textAlign: 'center' as const,
     marginBottom: '0.5rem',
@@ -135,10 +162,10 @@ const styles = {
     outline: 'none',
     fontSize: '1rem',
   },
-  forgotPassword: {
-    textAlign: 'right' as const,
-    fontSize: '0.85rem',
-    marginTop: '-0.5rem'
+  hint: {
+    fontSize: '0.75rem',
+    marginTop: '0.25rem',
+    color: '#0992C2'
   },
   button: {
     marginTop: '1rem',
@@ -160,17 +187,7 @@ const styles = {
     borderRadius: '8px',
     marginBottom: '1.5rem',
     textAlign: 'center' as const
-  },
-  footerText: {
-    marginTop: '2rem',
-    textAlign: 'center' as const,
-    fontSize: '0.95rem'
-  },
-  link: {
-    color: '#0AC4E0',
-    textDecoration: 'none',
-    fontWeight: 'bold'
   }
 };
 
-export default Login;
+export default ResetPassword;

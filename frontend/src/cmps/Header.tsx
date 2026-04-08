@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { LogOut, Fish, Home, LayoutDashboard, MessageSquare } from 'lucide-react';
 
 const Header: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, isGuest, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -26,7 +26,7 @@ const Header: React.FC = () => {
             <span className="d-none d-md-inline">Home</span>
           </Link>
           
-          {user && (
+          {(user || isGuest) && (
             <>
               <Link to="/dashboard" className="nav-link d-flex align-items-center gap-1">
                 <LayoutDashboard size={18} />
@@ -40,16 +40,21 @@ const Header: React.FC = () => {
           )}
 
           <div className="ms-3 d-flex align-items-center gap-3">
-            {user ? (
+            {user || isGuest ? (
               <>
-                <span className="d-none d-lg-inline text-sand small">Hi, {user.name}</span>
+                <span className="d-none d-lg-inline text-sand small">
+                  {user ? `Hi, ${user.user_name || user.first_name}` : 'Guest Mode'}
+                </span>
                 <button onClick={handleLogout} className="btn btn-outline-light btn-sm d-flex align-items-center gap-2 px-3">
                   <LogOut size={16} />
                   <span className="d-none d-sm-inline">Logout</span>
                 </button>
               </>
             ) : (
-              <Link to="/login" className="btn btn-accent btn-sm px-4">Login</Link>
+              <>
+                <Link to="/login" className="btn btn-accent btn-sm px-4">Login</Link>
+                <Link to="/register" className="btn btn-outline-light btn-sm px-3 d-none d-sm-inline">Register</Link>
+              </>
             )}
           </div>
         </div>
