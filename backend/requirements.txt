@@ -10,6 +10,7 @@ alembic
 bcrypt
 python-jose
 aiosmtplib
+slowapi
 python-socketio
 cryptography
 python-multipart

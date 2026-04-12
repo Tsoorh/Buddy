@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     postgres_db: str
     chat_encryption_key: str
     gemini_api_key: str
+    
+    # Security
+    allowed_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    ratelimit_enabled: bool = True
 
     # Cloudinary
     cloudinary_cloud_name: str = ""

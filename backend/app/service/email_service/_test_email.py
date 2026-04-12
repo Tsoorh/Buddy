@@ -1,3 +1,4 @@
+import asyncio
 import os
 import sys
 
@@ -6,11 +7,9 @@ sys.path.append(os.getcwd())
 
 from app.service.email_service.index import get_email_service
 
-# from app.service.email_service.prod import EmailService
 
-
-def main():
-    print("Starting email test...")
+async def main():
+    print("Starting email test (async)...")
 
     # Check for environment variables
     sender = os.getenv("SENDER_EMAIL")
@@ -28,18 +27,18 @@ def main():
     service = get_email_service()
     # Send to self for verification
     recipient = "tsoor.hartov@gmail.com"
-    subject = "Test Email Integration"
+    subject = "Test Email Integration (Async)"
     body = (
-        "Hello! This is a test email from the Buddy application real email integration."
+        "Hello! This is a test email from the Buddy application async email integration."
     )
 
     print(f"Sending email from {sender} to {recipient}...")
 
-    if service.send_email(recipient, subject, body):
+    if await service.send_email(recipient, subject, body):
         print("Test PASSED: Email sent successfully.")
     else:
         print("Test FAILED: Could not send email. Check logs for details.")
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

@@ -56,6 +56,7 @@ class AuthenticationService:
 
     async def get_user_by_email(self, email: str) -> UserBase | None:
         try:
+            email = email.lower()
             query = select(UserBase).where(UserBase.email == email)
             result = await self.db.execute(query)
             return result.scalar_one_or_none()

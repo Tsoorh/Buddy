@@ -2,9 +2,11 @@ from fastapi import Depends, HTTPException, UploadFile
 from .service import CatchService
 from .model import CatchFilterBy, CatchResponse, Catch
 from app.service.file_service import FileService
+from app.core.logger import setup_logger
 from typing import Optional, List, Dict, Any
 import uuid
 
+app_logger = setup_logger("app_logger")
 
 class CatchController:
     def __init__(
@@ -66,7 +68,7 @@ class CatchController:
         except HTTPException:
             raise
         except Exception as e:
-            print(f"Error in add_catch_media: {e}")
+            app_logger.error(f"Error in add_catch_media: {e}")
             raise HTTPException(
                 status_code=500,
                 detail="Internal server error while uploading catch media",

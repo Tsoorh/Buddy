@@ -1,4 +1,4 @@
-import smtplib
+import aiosmtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
@@ -20,9 +20,9 @@ class EmailService:
         frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
         reset_link = f"{frontend_url}/reset-password?token={token}"
         body = f"Click the link below to reset your password:\n\n{reset_link}\n\nIf you did not request a password reset, please ignore this email."
-        self.send_email(to_email, subject, body)
+        await self.send_email(to_email, subject, body)
 
-    def send_email(self, to_email: str, subject: str, body: str) -> bool:
+    async def send_email(self, to_email: str, subject: str, body: str) -> bool:
         try:
             message = MIMEMultipart()
             message["From"] = self.sender_email
@@ -30,14 +30,11 @@ class EmailService:
             message["Subject"] = subject
             message.attach(MIMEText(body, "plain"))
 
-            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
-                if self.smtp_port == 587:
-                    server.starttls()
-
-                if self.sender_password:
-                    server.login(self.sender_email, self.sender_password)
-
-                server.send_message(message)
+            await aiosmtplib.send(
+                message,
+                hostname=self.smtp_server,
+                port=self.smtp_port,
+            )
 
             logger.info(f"Email sent to {to_email}")
             return True

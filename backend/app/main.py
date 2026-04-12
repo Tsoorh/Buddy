@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 import socketio
 import asyncio
@@ -16,7 +16,14 @@ from app.api.chat.routes import router as chat_router
 from app.api.analytics.routes import router as analytics_router
 from app.api.chat.service import ChatService
 from app.service.socket_service import sio
+from app.core.config import settings
+from app.core.logger import setup_logger
+from app.core.limiter import limiter
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
+# Initialize Logger
+app_logger = setup_logger("app_logger")
 
 async def guest_cleanup_task():
     while True:
@@ -25,7 +32,7 @@ async def guest_cleanup_task():
                 await ChatService.cleanup_old_guests(db)
                 break
         except Exception as e:
-            print(f"Guest cleanup task failed: {e}")
+            app_logger.error(f"Guest cleanup task failed: {e}")
         await asyncio.sleep(3600)  # Sleep for 1 hour
 
 
@@ -37,10 +44,15 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="SpearFreshFish API", lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Configure CORS dynamically
+allowed_origins = [origin.strip() for origin in settings.allowed_origins.split(",")]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

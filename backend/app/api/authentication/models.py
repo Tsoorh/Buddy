@@ -1,9 +1,14 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 
 
 class Login(BaseModel):
     email: EmailStr
     password: str
+
+    @field_validator("email", mode="after")
+    @classmethod
+    def lowercase_email(cls, v: str) -> str:
+        return v.lower()
 
 
 class Token(BaseModel):
@@ -18,6 +23,11 @@ class RefreshTokenRequest(BaseModel):
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
+
+    @field_validator("email", mode="after")
+    @classmethod
+    def lowercase_email(cls, v: str) -> str:
+        return v.lower()
 
 
 class ResetPasswordRequest(BaseModel):

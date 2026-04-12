@@ -1,5 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { AuthService } from '../services/AuthService';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
+import { AuthService } from "../services/AuthService";
 
 export interface User {
   id: string;
@@ -25,7 +31,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [isGuest, setIsGuest] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,18 +42,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const savedUser = AuthService.getUser();
     if (savedUser && AuthService.isAuthenticated()) {
       setUser(savedUser);
-    } else if (localStorage.getItem('spear_fresh_fish_guest') === 'true') {
+    } else if (localStorage.getItem("spear_fresh_fish_guest") === "true") {
       setIsGuest(true);
     }
-    
+
     const handleLogout = () => logout();
-    window.addEventListener('spear_fresh_fish_logout', handleLogout);
+    window.addEventListener("spear_fresh_fish_logout", handleLogout);
 
     setIsLoading(false);
-    
+
     return () => {
-      window.removeEventListener('spear_fresh_fish_logout', handleLogout);
-    }
+      window.removeEventListener("spear_fresh_fish_logout", handleLogout);
+    };
   }, []);
 
   const login = (accessToken: string, refreshToken: string, user: User) => {
@@ -54,23 +62,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     AuthService.setUser(user);
     setUser(user);
     setIsGuest(false);
-    localStorage.removeItem('spear_fresh_fish_guest');
+    localStorage.removeItem("spear_fresh_fish_guest");
   };
 
   const logout = () => {
     AuthService.logout();
     setUser(null);
     setIsGuest(false);
-    localStorage.removeItem('spear_fresh_fish_guest');
+    localStorage.removeItem("spear_fresh_fish_guest");
   };
-  
+
   const continueAsGuest = () => {
     setIsGuest(true);
-    localStorage.setItem('spear_fresh_fish_guest', 'true');
+    localStorage.setItem("spear_fresh_fish_guest", "true");
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isGuest, isLoading, login, logout, continueAsGuest }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isGuest,
+        isLoading,
+        login,
+        logout,
+        continueAsGuest,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -79,7 +97,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

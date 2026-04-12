@@ -2,20 +2,23 @@ import socketio
 import uuid
 from app.service.db_service import AsyncSessionLocal
 from app.api.chat.service import ChatService
+import os
+from app.core.logger import setup_logger
 
-# Create a Socket.IO Async Server
-sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
+app_logger = setup_logger("app_logger")
 
+sio = socketio.AsyncServer(
+    async_mode='asgi',
+    cors_allowed_origins='*'
+)
 
 @sio.event
 async def connect(sid, environ):
-    print(f"Client connected: {sid}")
-
+    app_logger.info(f"Socket.IO client connected: {sid}")
 
 @sio.event
 async def disconnect(sid):
-    print(f"Client disconnected: {sid}")
-
+    app_logger.info(f"Socket.IO client disconnected: {sid}")
 
 @sio.event
 async def join_room(sid, data):

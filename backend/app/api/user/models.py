@@ -23,6 +23,11 @@ class User(BaseModel):
             raise ValueError("Birthday is too far past, are you a Zombie?")
         return v
 
+    @field_validator("email", mode="after")
+    @classmethod
+    def lowercase_email(cls, v: str) -> str:
+        return v.lower() if v else v
+
     @field_validator("phone_number", mode="after")
     @classmethod
     def valid_phone_number(cls, v: str) -> str:
@@ -43,6 +48,11 @@ class UserUpdate(BaseModel):
     user_name: str | None = None
     email: EmailStr | None = None
     phone_number: str | None = None
+
+    @field_validator("email", mode="after")
+    @classmethod
+    def lowercase_email(cls, v: str | None) -> str | None:
+        return v.lower() if v else v
 
 
 class createUser(User):
