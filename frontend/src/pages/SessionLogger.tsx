@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { SessionService, type SessionDetails } from '../services/SessionService';
 import SessionForm from '../cmps/SessionForm';
-import { Anchor } from 'lucide-react';
+import { Anchor, CheckCircle, PlusCircle, LayoutDashboard } from 'lucide-react';
 
 const SessionLogger: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successId, setSuccessId] = useState<string | null>(null);
 
   const onHandleSubmit = async (formData: SessionDetails) => {
     if (!user) return;
@@ -17,18 +18,42 @@ const SessionLogger: React.FC = () => {
     try {
       setIsLoading(true);
       setError(null);
-      await SessionService.addSessionApi({
+      const newSessionId = await SessionService.addSessionApi({
         ...formData,
         user_id: user.id
       });
-      alert('Session logged successfully!');
-      navigate('/sessions');
+      setSuccessId(newSessionId);
     } catch (err) {
       setError('Failed to log session. Please check your data.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (successId) {
+    return (
+      <div className="container py-5">
+        <div className="row justify-content-center">
+          <div className="col-lg-6 text-center">
+            <div className="glass-card shadow-lg p-5 animate-fade-in">
+              <CheckCircle size={64} color="#0AC4E0" className="mb-4" />
+              <h2 className="text-sand mb-3">Session Logged!</h2>
+              <p className="text-white opacity-75 mb-5 fs-5">Your dive session has been recorded successfully. Would you like to add some catches now?</p>
+              
+              <div className="d-grid gap-3">
+                <Link to={`/log-catch?sessionId=${successId}`} className="btn btn-accent btn-lg py-3 d-flex align-items-center justify-content-center gap-2">
+                  <PlusCircle size={20} /> Add Catches to this Session
+                </Link>
+                <Link to="/dashboard" className="btn btn-outline-info btn-lg py-3 d-flex align-items-center justify-content-center gap-2">
+                  <LayoutDashboard size={20} /> Back to Dashboard
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-5">

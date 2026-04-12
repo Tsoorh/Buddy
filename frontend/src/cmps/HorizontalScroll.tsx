@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface HorizontalScrollProps {
@@ -9,6 +9,34 @@ interface HorizontalScrollProps {
 
 const HorizontalScroll: React.FC<HorizontalScrollProps> = ({ children, title, viewAllPath }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 5);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 5);
+    }
+  };
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) {
+      checkScroll();
+      el.addEventListener('scroll', checkScroll);
+      window.addEventListener('resize', checkScroll);
+      
+      // Check again after children might have rendered
+      const timeoutId = setTimeout(checkScroll, 100);
+      
+      return () => {
+        el.removeEventListener('scroll', checkScroll);
+        window.removeEventListener('resize', checkScroll);
+        clearTimeout(timeoutId);
+      };
+    }
+  }, [children]);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -32,8 +60,9 @@ const HorizontalScroll: React.FC<HorizontalScrollProps> = ({ children, title, vi
       <div className="position-relative group">
         <button 
           onClick={() => scroll('left')}
-          className="btn btn-dark btn-sm rounded-circle position-absolute start-0 top-50 translate-middle-y z-3 d-none d-md-flex align-items-center justify-content-center opacity-0 group-hover-opacity-100"
-          style={{ width: '32px', height: '32px', left: '-16px !important', backgroundColor: 'rgba(0,0,0,0.6)', border: '1px solid var(--accent-cyan)' }}
+          disabled={!canScrollLeft}
+          className={`btn btn-dark btn-sm rounded-circle position-absolute start-0 top-50 translate-middle-y z-3 d-none d-md-flex align-items-center justify-content-center transition-opacity ${canScrollLeft ? 'opacity-0 group-hover-opacity-100' : 'opacity-0 pointer-events-none'}`}
+          style={{ width: '32px', height: '32px', left: '-16px', backgroundColor: 'rgba(0,0,0,0.6)', border: '1px solid var(--accent-cyan)' }}
         >
           <ChevronLeft size={18} color="var(--accent-cyan)" />
         </button>
@@ -52,8 +81,9 @@ const HorizontalScroll: React.FC<HorizontalScrollProps> = ({ children, title, vi
 
         <button 
           onClick={() => scroll('right')}
-          className="btn btn-dark btn-sm rounded-circle position-absolute end-0 top-50 translate-middle-y z-3 d-none d-md-flex align-items-center justify-content-center opacity-0 group-hover-opacity-100"
-          style={{ width: '32px', height: '32px', right: '-16px !important', backgroundColor: 'rgba(0,0,0,0.6)', border: '1px solid var(--accent-cyan)' }}
+          disabled={!canScrollRight}
+          className={`btn btn-dark btn-sm rounded-circle position-absolute end-0 top-50 translate-middle-y z-3 d-none d-md-flex align-items-center justify-content-center transition-opacity ${canScrollRight ? 'opacity-0 group-hover-opacity-100' : 'opacity-0 pointer-events-none'}`}
+          style={{ width: '32px', height: '32px', right: '-16px', backgroundColor: 'rgba(0,0,0,0.6)', border: '1px solid var(--accent-cyan)' }}
         >
           <ChevronRight size={18} color="var(--accent-cyan)" />
         </button>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Fish, Camera, MapPin, ChevronRight, ChevronLeft, Save, Plus, Loader2, Check } from 'lucide-react';
 import { SessionService, type SessionResponse } from '../services/SessionService';
@@ -11,7 +11,10 @@ import type { AxiosError } from 'axios';
 const CatchLogger: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
+  const [searchParams] = useSearchParams();
+  const initialSessionId = searchParams.get('sessionId');
+
+  const [step, setStep] = useState(initialSessionId ? 2 : 1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +23,7 @@ const CatchLogger: React.FC = () => {
   const [fishList, setFishList] = useState<FishResponse[]>([]);
 
   // Form State
-  const [selectedSessionId, setSelectedSessionId] = useState<string>('');
+  const [selectedSessionId, setSelectedSessionId] = useState<string>(initialSessionId || '');
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
 
   const [catchData, setCatchData] = useState({
@@ -42,8 +45,10 @@ const CatchLogger: React.FC = () => {
       setSessions(sessionsData);
       setFishList(fishData);
       
-      // Auto-select most recent if nothing selected
-      if (sessionsData.length > 0 && !selectedSessionId) {
+      // Auto-select if sessionId in URL, otherwise most recent if nothing selected
+      if (initialSessionId) {
+        setSelectedSessionId(initialSessionId);
+      } else if (sessionsData.length > 0 && !selectedSessionId) {
         setSelectedSessionId(sessionsData[0].id);
       }
     } catch (err) {

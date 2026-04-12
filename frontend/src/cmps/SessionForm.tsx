@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { type SessionDetails } from '../services/SessionService';
+import React, { useState, useEffect } from 'react';
+import { type SessionDetails, SessionService } from '../services/SessionService';
 import { AuthInput } from './AuthShared';
-import { Loader2 } from 'lucide-react';
+import { Loader2, LogIn, LogOut, Calendar, MapPin, Eye, ArrowDown, ArrowUp, Timer, MessageSquare } from 'lucide-react';
 import LocationPicker from './LocationPicker';
 
 interface SessionFormProps {
@@ -21,14 +21,51 @@ const SessionForm: React.FC<SessionFormProps> = ({
     visibility: initialData?.visibility || 0,
     max_depth: initialData?.max_depth || 0,
     min_depth: initialData?.min_depth || 0,
-    latitude: initialData?.latitude || 0,
-    longitude: initialData?.longitude || 0,
+    latitude: initialData?.latitude || 32.0853,
+    longitude: initialData?.longitude || 34.7818,
     longest_hold_down_time: initialData?.longest_hold_down_time || 0,
     longest_hold_down_depth: initialData?.longest_hold_down_depth || 0,
     entry_time: initialData?.entry_time ? new Date(initialData.entry_time).toISOString().slice(0, 16) : '',
     exit_time: initialData?.exit_time ? new Date(initialData.exit_time).toISOString().slice(0, 16) : '',
     free_text: initialData?.free_text || '',
   });
+
+  const [recentLocations, setRecentLocations] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchRecentLocations = async () => {
+      try {
+        const sessions = await SessionService.getSessionsApi();
+        const locations = sessions
+          .map(s => s.location_name)
+          .filter((name): name is string => !!name);
+        const uniqueLocations = Array.from(new Set(locations)).slice(0, 10);
+        setRecentLocations(uniqueLocations);
+      } catch (err) {
+        console.error('Failed to fetch recent locations', err);
+      }
+    };
+    fetchRecentLocations();
+  }, []);
+
+  const onHandleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target as HTMLInputElement;
+    let newValue: any = value;
+
+    if (type === 'number') newValue = value === '' ? 0 : parseFloat(value);
+    if (type === 'checkbox') newValue = (e.target as HTMLInputElement).checked;
+
+    setFormData(prev => {
+      const updated = { ...prev, [name]: newValue };
+      
+      // Auto-match date when entry_time changes
+      if (name === 'entry_time' && value) {
+        updated.date = value.split('T')[0];
+      }
+      
+      return updated;
+    });
+  };
 
   const onHandleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,30 +74,48 @@ const SessionForm: React.FC<SessionFormProps> = ({
 
   return (
     <form onSubmit={onHandleSubmit} className="auth-form pb-4">
-      <div className="section-divider mb-4"><span className="text-accent small fw-bold text-uppercase">Basic Information</span></div>
+      <div className="section-divider mb-4">
+        <span className="text-accent small fw-bold text-uppercase d-flex align-items-center gap-2">
+          <MapPin size={16} /> Basic Information
+        </span>
+      </div>
       
-      <AuthInput 
-        label="Location Name" required value={formData.location_name || ''} 
-        onChange={e => setFormData({...formData, location_name: e.target.value})} 
-        placeholder="e.g. North Beach, Eilat"
-      />
+      <div className="mb-3">
+        <label className="auth-label">Location Name</label>
+        <input 
+          name="location_name"
+          className="auth-input w-100"
+          required 
+          value={formData.location_name || ''} 
+          onChange={onHandleChange} 
+          placeholder="e.g. North Beach, Eilat"
+          list="recent-locations"
+        />
+        <datalist id="recent-locations">
+          {recentLocations.map(loc => <option key={loc} value={loc} />)}
+        </datalist>
+      </div>
       
       <div className="row">
         <div className="col-md-6">
           <AuthInput 
-            label="Date" type="date" required value={formData.date || ''} 
-            onChange={e => setFormData({...formData, date: e.target.value})} 
+            label="Date" type="date" name="date" required value={formData.date || ''} 
+            onChange={onHandleChange} 
           />
         </div>
         <div className="col-md-6">
            <AuthInput 
-            label="Visibility (m)" type="number" value={formData.visibility || 0} 
-            onChange={e => setFormData({...formData, visibility: parseInt(e.target.value)})} 
+            label="Visibility (m)" type="number" name="visibility" value={formData.visibility || 0} 
+            onChange={onHandleChange} 
           />
         </div>
       </div>
 
-      <div className="section-divider my-4"><span className="text-accent small fw-bold text-uppercase">GPS Coordinates</span></div>
+      <div className="section-divider my-4">
+        <span className="text-accent small fw-bold text-uppercase d-flex align-items-center gap-2">
+          <Calendar size={16} /> GPS Coordinates
+        </span>
+      </div>
       <div className="mb-4">
         <LocationPicker 
           lat={formData.latitude || 32.0853} 
@@ -77,18 +132,22 @@ const SessionForm: React.FC<SessionFormProps> = ({
         </div>
       </div>
 
-      <div className="section-divider my-4"><span className="text-accent small fw-bold text-uppercase">Dive Details</span></div>
+      <div className="section-divider my-4">
+        <span className="text-accent small fw-bold text-uppercase d-flex align-items-center gap-2">
+          <ArrowDown size={16} /> Dive Details
+        </span>
+      </div>
       <div className="row">
         <div className="col-md-6">
           <AuthInput 
-            label="Min Depth (m)" type="number" value={formData.min_depth || 0} 
-            onChange={e => setFormData({...formData, min_depth: parseFloat(e.target.value)})} 
+            label="Min Depth (m)" type="number" name="min_depth" value={formData.min_depth || 0} 
+            onChange={onHandleChange} 
           />
         </div>
         <div className="col-md-6">
           <AuthInput 
-            label="Max Depth (m)" type="number" value={formData.max_depth || 0} 
-            onChange={e => setFormData({...formData, max_depth: parseFloat(e.target.value)})} 
+            label="Max Depth (m)" type="number" name="max_depth" value={formData.max_depth || 0} 
+            onChange={onHandleChange} 
           />
         </div>
       </div>
@@ -96,55 +155,73 @@ const SessionForm: React.FC<SessionFormProps> = ({
       <div className="row">
         <div className="col-md-6">
           <AuthInput 
-            label="Longest Hold-down (sec)" type="number" value={formData.longest_hold_down_time || 0} 
-            onChange={e => setFormData({...formData, longest_hold_down_time: parseInt(e.target.value)})} 
+            label="Longest Hold-down (sec)" type="number" name="longest_hold_down_time" value={formData.longest_hold_down_time || 0} 
+            onChange={onHandleChange} 
           />
         </div>
         <div className="col-md-6">
           <AuthInput 
-            label="Deepest Hold-down (m)" type="number" value={formData.longest_hold_down_depth || 0} 
-            onChange={e => setFormData({...formData, longest_hold_down_depth: parseFloat(e.target.value)})} 
+            label="Deepest Hold-down (m)" type="number" name="longest_hold_down_depth" value={formData.longest_hold_down_depth || 0} 
+            onChange={onHandleChange} 
           />
         </div>
       </div>
 
-      <div className="section-divider my-4"><span className="text-accent small fw-bold text-uppercase">Timing</span></div>
-      <div className="row">
-        <div className="col-md-6">
-          <AuthInput 
-            label="Entry Time" type="datetime-local" value={formData.entry_time || ''} 
-            onChange={e => setFormData({...formData, entry_time: e.target.value})} 
-          />
-        </div>
-        <div className="col-md-6">
-          <AuthInput 
-            label="Exit Time" type="datetime-local" value={formData.exit_time || ''} 
-            onChange={e => setFormData({...formData, exit_time: e.target.value})} 
-          />
+      <div className="section-divider my-4">
+        <span className="text-accent small fw-bold text-uppercase d-flex align-items-center gap-2">
+          <Timer size={16} /> Timing
+        </span>
+      </div>
+      <div className="glass-card p-3 mb-4">
+        <div className="row g-3">
+          <div className="col-md-6">
+            <div className="auth-input-group">
+              <label className="auth-label d-flex align-items-center gap-2"><LogIn size={14} color="var(--accent-cyan)" /> Entry Time</label>
+              <input 
+                type="datetime-local" name="entry_time" className="auth-input" 
+                value={formData.entry_time || ''} onChange={onHandleChange} 
+              />
+            </div>
+          </div>
+          <div className="col-md-6">
+            <div className="auth-input-group">
+              <label className="auth-label d-flex align-items-center gap-2"><LogOut size={14} color="#ff4d4d)" /> Exit Time</label>
+              <input 
+                type="datetime-local" name="exit_time" className="auth-input" 
+                value={formData.exit_time || ''} onChange={onHandleChange} 
+              />
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="section-divider my-4"><span className="text-accent small fw-bold text-uppercase">Other</span></div>
+      <div className="section-divider my-4">
+        <span className="text-accent small fw-bold text-uppercase d-flex align-items-center gap-2">
+          <MessageSquare size={16} /> Other
+        </span>
+      </div>
       <div className="mb-3">
         <label className="auth-label">Notes</label>
         <textarea 
+          name="free_text"
           className="auth-input w-100" rows={3}
           placeholder="Visibility, current, water temp, etc."
           value={formData.free_text || ''}
-          onChange={e => setFormData({...formData, free_text: e.target.value})}
+          onChange={onHandleChange}
         ></textarea>
       </div>
 
       <div className="form-check form-switch mb-4">
         <input 
           className="form-check-input" type="checkbox" role="switch" id="isPublicSession" 
+          name="is_public"
           checked={formData.is_public}
-          onChange={e => setFormData({...formData, is_public: e.target.checked})}
+          onChange={onHandleChange}
         />
         <label className="form-check-label text-white small" htmlFor="isPublicSession">Public Session</label>
       </div>
 
-      <button type="submit" className="btn btn-accent w-100 py-3 shadow" disabled={isLoading}>
+      <button type="submit" className="btn btn-accent w-100 py-3 shadow d-flex align-items-center justify-content-center gap-2" disabled={isLoading}>
         {isLoading ? <Loader2 className="animate-spin" size={20} /> : buttonText}
       </button>
     </form>
