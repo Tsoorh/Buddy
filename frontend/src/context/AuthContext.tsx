@@ -39,20 +39,37 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = AuthService.getUser();
-    if (savedUser && AuthService.isAuthenticated()) {
-      setUser(savedUser);
-    } else if (localStorage.getItem("spear_fresh_fish_guest") === "true") {
-      setIsGuest(true);
-    }
+    const initAuth = async () => {
+      const token = AuthService.getToken();
+      const savedUser = AuthService.getUser();
+
+      if (token && savedUser) {
+        try {
+          // Verify session with backend
+          const user = await AuthService.getUserInfoApi();
+          setUser(user);
+          AuthService.setUser(user); // Sync latest data
+        } catch (error) {
+          console.error('Session verification failed:', error);
+          // If 401, HttpService already triggers logout event via interceptor
+          // but we clear local state here just in case of other errors
+          setUser(null);
+          AuthService.logout();
+        }
+      } else if (localStorage.getItem('spear_fresh_fish_guest') === 'true') {
+        setIsGuest(true);
+      }
+      
+      setIsLoading(false);
+    };
+
+    initAuth();
 
     const handleLogout = () => logout();
-    window.addEventListener("spear_fresh_fish_logout", handleLogout);
-
-    setIsLoading(false);
+    window.addEventListener('spear_fresh_fish_logout', handleLogout);
 
     return () => {
-      window.removeEventListener("spear_fresh_fish_logout", handleLogout);
+      window.removeEventListener('spear_fresh_fish_logout', handleLogout);
     };
   }, []);
 
