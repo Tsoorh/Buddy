@@ -38,6 +38,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [isGuest, setIsGuest] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  const logout = () => {
+    AuthService.logout();
+    setUser(null);
+    setIsGuest(false);
+    localStorage.removeItem("spear_fresh_fish_guest");
+  };
+
   useEffect(() => {
     const initAuth = async () => {
       const token = AuthService.getToken();
@@ -78,13 +85,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     if (refreshToken) AuthService.setRefreshToken(refreshToken);
     AuthService.setUser(user);
     setUser(user);
-    setIsGuest(false);
-    localStorage.removeItem("spear_fresh_fish_guest");
-  };
-
-  const logout = () => {
-    AuthService.logout();
-    setUser(null);
     setIsGuest(false);
     localStorage.removeItem("spear_fresh_fish_guest");
   };

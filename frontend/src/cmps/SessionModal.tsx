@@ -38,7 +38,7 @@ const SessionModal: React.FC<SessionModalProps> = ({ session, isOpen, onClose, o
       
       onSuccess(sessionId);
       onClose();
-    } catch (err) {
+    } catch {
       setError(`Failed to ${session ? 'update' : 'create'} session.`);
     } finally {
       setIsLoading(false);

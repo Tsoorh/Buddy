@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { SessionService, type SessionDetails } from '../services/SessionService';
 import SessionForm from '../cmps/SessionForm';
@@ -7,7 +7,6 @@ import { Anchor, CheckCircle, PlusCircle, LayoutDashboard } from 'lucide-react';
 
 const SessionLogger: React.FC = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successId, setSuccessId] = useState<string | null>(null);
@@ -23,7 +22,7 @@ const SessionLogger: React.FC = () => {
         user_id: user.id
       });
       setSuccessId(newSessionId);
-    } catch (err) {
+    } catch {
       setError('Failed to log session. Please check your data.');
     } finally {
       setIsLoading(false);

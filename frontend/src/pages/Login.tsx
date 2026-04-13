@@ -65,7 +65,7 @@ const Login: React.FC = () => {
         />
         
         <div className="text-end" style={{ marginTop: '-0.5rem' }}>
-           <Link to="/forgot-password" size="sm" className="auth-link small">Forgot Password?</Link>
+           <Link to="/forgot-password" className="auth-link small">Forgot Password?</Link>
         </div>
 
         <button type="submit" className="btn btn-accent p-3 w-100 mt-2" disabled={isLoading}>

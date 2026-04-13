@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { type SessionDetails, SessionService } from '../services/SessionService';
 import { AuthInput } from './AuthShared';
-import { Loader2, LogIn, LogOut, Calendar, MapPin, Eye, ArrowDown, ArrowUp, Timer, MessageSquare } from 'lucide-react';
+import { Loader2, Calendar, MapPin, ArrowDown, Timer, MessageSquare } from 'lucide-react';
 import LocationPicker from './LocationPicker';
+import DateTimePicker from './DateTimePicker';
 
 interface SessionFormProps {
   initialData?: Partial<SessionDetails>;
@@ -50,7 +51,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
 
   const onHandleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
-    let newValue: any = value;
+    let newValue: string | number | boolean = value;
 
     if (type === 'number') newValue = value === '' ? 0 : parseFloat(value);
     if (type === 'checkbox') newValue = (e.target as HTMLInputElement).checked;
@@ -98,12 +99,16 @@ const SessionForm: React.FC<SessionFormProps> = ({
       
       <div className="row">
         <div className="col-md-6">
-          <AuthInput 
-            label="Date" type="date" name="date" required value={formData.date || ''} 
-            onChange={onHandleChange} 
+          <DateTimePicker 
+            label="Date" 
+            value={formData.date || ''} 
+            onChange={(val) => setFormData(prev => ({ 
+              ...prev, 
+              date: val.split('T')[0] 
+            }))} 
           />
         </div>
-        <div className="col-md-6">
+        <div className="col-md-6 pt-md-0 pt-3">
            <AuthInput 
             label="Visibility (m)" type="number" name="visibility" value={formData.visibility || 0} 
             onChange={onHandleChange} 
@@ -175,22 +180,24 @@ const SessionForm: React.FC<SessionFormProps> = ({
       <div className="glass-card p-3 mb-4">
         <div className="row g-3">
           <div className="col-md-6">
-            <div className="auth-input-group">
-              <label className="auth-label d-flex align-items-center gap-2"><LogIn size={14} color="var(--accent-cyan)" /> Entry Time</label>
-              <input 
-                type="datetime-local" name="entry_time" className="auth-input" 
-                value={formData.entry_time || ''} onChange={onHandleChange} 
-              />
-            </div>
+            <DateTimePicker 
+              label="Entry Time" 
+              value={formData.entry_time || ''} 
+              onChange={(val) => {
+                setFormData(prev => ({ 
+                  ...prev, 
+                  entry_time: val,
+                  date: val.split('T')[0] 
+                }));
+              }} 
+            />
           </div>
           <div className="col-md-6">
-            <div className="auth-input-group">
-              <label className="auth-label d-flex align-items-center gap-2"><LogOut size={14} color="#ff4d4d)" /> Exit Time</label>
-              <input 
-                type="datetime-local" name="exit_time" className="auth-input" 
-                value={formData.exit_time || ''} onChange={onHandleChange} 
-              />
-            </div>
+            <DateTimePicker 
+              label="Exit Time" 
+              value={formData.exit_time || ''} 
+              onChange={(val) => setFormData(prev => ({ ...prev, exit_time: val }))} 
+            />
           </div>
         </div>
       </div>

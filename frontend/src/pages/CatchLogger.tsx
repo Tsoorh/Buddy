@@ -6,6 +6,7 @@ import { SessionService, type SessionResponse } from '../services/SessionService
 import { FishService, type FishResponse } from '../services/FishService';
 import { CatchService } from '../services/CatchService';
 import SessionModal from '../cmps/SessionModal';
+import DateTimePicker from '../cmps/DateTimePicker';
 import type { AxiosError } from 'axios';
 
 const CatchLogger: React.FC = () => {
@@ -51,7 +52,7 @@ const CatchLogger: React.FC = () => {
       } else if (sessionsData.length > 0 && !selectedSessionId) {
         setSelectedSessionId(sessionsData[0].id);
       }
-    } catch (err) {
+    } catch {
       setError('Failed to load initial data.');
     } finally {
       setIsLoading(false);
@@ -180,11 +181,10 @@ const CatchLogger: React.FC = () => {
                 />
               </div>
               <div className="col-6">
-                <label className="form-label text-white">Time</label>
-                <input 
-                  type="datetime-local" className="form-control auth-input" 
+                <DateTimePicker 
+                  label="Time"
                   value={catchData.catch_time}
-                  onChange={e => setCatchData({...catchData, catch_time: e.target.value})}
+                  onChange={val => setCatchData({...catchData, catch_time: val})}
                 />
               </div>
             </div>

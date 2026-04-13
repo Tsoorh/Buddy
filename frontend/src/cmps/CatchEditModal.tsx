@@ -4,6 +4,7 @@ import { CatchService, type CatchResponse, type CreateCatch } from '../services/
 import { FishService, type FishResponse } from '../services/FishService';
 import { AuthInput } from './AuthShared';
 import { Loader2, Trash2 } from 'lucide-react';
+import DateTimePicker from './DateTimePicker';
 
 interface CatchEditModalProps {
   catchItem: CatchResponse | null;
@@ -23,7 +24,7 @@ const CatchEditModal: React.FC<CatchEditModalProps> = ({ catchItem, isOpen, onCl
       try {
         const data = await FishService.getFishListApi();
         setFishList(data);
-      } catch (err) {
+      } catch {
         console.error('Failed to load fish species.');
       }
     };
@@ -61,7 +62,7 @@ const CatchEditModal: React.FC<CatchEditModalProps> = ({ catchItem, isOpen, onCl
       await CatchService.updateCatchApi(catchItem.id, payload);
       onSuccess();
       onClose();
-    } catch (err) {
+    } catch {
       setError('Failed to update catch.');
     } finally {
       setIsLoading(false);
@@ -73,7 +74,7 @@ const CatchEditModal: React.FC<CatchEditModalProps> = ({ catchItem, isOpen, onCl
     try {
       await CatchService.deleteCatchMediaApi(mediaId);
       onSuccess(); // Refresh to update media list
-    } catch (err) {
+    } catch {
       alert('Failed to delete photo.');
     }
   };
@@ -105,9 +106,9 @@ const CatchEditModal: React.FC<CatchEditModalProps> = ({ catchItem, isOpen, onCl
             />
           </div>
           <div className="col-6">
-            <AuthInput 
-              label="Time" type="datetime-local" value={formData.catch_time || ''} 
-              onChange={e => setFormData({...formData, catch_time: e.target.value})} 
+            <DateTimePicker 
+              label="Time" value={formData.catch_time || ''} 
+              onChange={val => setFormData({...formData, catch_time: val})} 
             />
           </div>
         </div>
