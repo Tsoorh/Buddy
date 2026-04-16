@@ -7,6 +7,7 @@ import { FishService, type FishResponse } from '../services/FishService';
 import { CatchService } from '../services/CatchService';
 import SessionModal from '../cmps/SessionModal';
 import DateTimePicker from '../cmps/DateTimePicker';
+import { NumberInput } from '../cmps/NumberInput';
 import type { AxiosError } from 'axios';
 
 const CatchLogger: React.FC = () => {
@@ -173,11 +174,11 @@ const CatchLogger: React.FC = () => {
             </div>
             <div className="row mb-3">
               <div className="col-6">
-                <label className="form-label text-white">Weight (kg)</label>
-                <input 
-                  type="number" step="0.1" className="form-control auth-input" 
-                  value={catchData.weight}
-                  onChange={e => setCatchData({...catchData, weight: e.target.value})}
+                <NumberInput 
+                  label="Weight (kg)"
+                  step={0.1}
+                  value={Number(catchData.weight) || 0}
+                  onChange={val => setCatchData({...catchData, weight: val.toString()})}
                 />
               </div>
               <div className="col-6">

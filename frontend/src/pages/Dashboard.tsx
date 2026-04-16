@@ -1,15 +1,54 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useDashboard } from '../hooks/useDashboard';
 import { Link } from 'react-router-dom';
-import { CloudRain, Wind, Thermometer, Waves, BrainCircuit, PlusCircle, Trophy, History, Loader2, Anchor } from 'lucide-react';
+import { CloudRain, Wind, Thermometer, Waves, BrainCircuit, PlusCircle, Trophy, History, Loader2, Anchor, MapPin, Edit3, ArrowUp } from 'lucide-react';
 import CatchCard from '../cmps/CatchCard';
 import SessionCard from '../cmps/SessionCard';
 import HorizontalScroll from '../cmps/HorizontalScroll';
+import BaseLocationModal from '../cmps/BaseLocationModal';
+import { UserSettingsService, type UserLocation } from '../services/UserSettingsService';
+import { WeatherService, type CurrentConditions } from '../services/WeatherService';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const { sessions, stats, aiTip, isLoading, error } = useDashboard();
+  const { sessions, stats, aiTip, isLoading: isDashboardLoading, error: dashboardError } = useDashboard();
+  
+  const [baseLocation, setBaseLocation] = useState<UserLocation | null>(null);
+  const [conditions, setConditions] = useState<CurrentConditions | null>(null);
+  const [isConditionsLoading, setIsConditionsLoading] = useState(false);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+
+  useEffect(() => {
+    const loc = UserSettingsService.getLocalLocation();
+    if (loc) {
+      setBaseLocation(loc);
+      fetchConditions(loc.lat, loc.lng);
+    }
+  }, []);
+
+  const fetchConditions = async (lat: number, lng: number) => {
+    try {
+      setIsConditionsLoading(true);
+      const data = await WeatherService.getCurrentConditions(lat, lng);
+      setConditions(data);
+    } catch (err) {
+      console.error('Weather Fetch Error:', err);
+    } finally {
+      setIsConditionsLoading(false);
+    }
+  };
+
+  const handleLocationSaved = (loc: UserLocation) => {
+    setBaseLocation(loc);
+    fetchConditions(loc.lat, loc.lng);
+  };
+
+  const getWindDirection = (deg: number) => {
+    const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    const index = Math.round(deg / 45) % 8;
+    return directions[index];
+  };
 
   // Get 10 most recent for horizontal scroll
   const recentSessionsList = [...sessions]
@@ -18,7 +57,7 @@ const Dashboard: React.FC = () => {
 
   const recentCatchesList = [...stats.recentCatches].slice(0, 10);
 
-  if (isLoading) {
+  if (isDashboardLoading) {
     return (
       <div className="container py-5 d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '60vh' }}>
         <Loader2 size={48} className="animate-spin mb-3" color="#0AC4E0" />
@@ -50,22 +89,68 @@ const Dashboard: React.FC = () => {
 
       </div>
 
-      {error && <div className="alert alert-danger border-0 glass-card text-white mb-4">{error}</div>}
+      {dashboardError && <div className="alert alert-danger border-0 glass-card text-white mb-4">{dashboardError}</div>}
 
       {/* Hero Analytics Section */}
       <div className="row g-4 mb-4">
         <div className="col-lg-8">
-          <div className="glass-card h-100">
-            <h5 className="mb-4 d-flex align-items-center gap-2 text-white">
-              <CloudRain size={20} color="#0AC4E0" />
-              Conditions at Eilat, Israel
-            </h5>
-            <div className="row text-center text-white">
-              <ConditionItem icon={<Thermometer size={32} />} value="24°C" label="Air" />
-              <ConditionItem icon={<Waves size={32} />} value="18°C" label="Water" />
-              <ConditionItem icon={<Wind size={32} />} value="12 km/h" label="Wind" />
-              <ConditionItem icon={<History size={32} />} value="High" label="Tide" />
-            </div>
+          <div className="glass-card h-100 position-relative overflow-hidden">
+             {/* Conditions Overlay/Prompt if no location */}
+             {!baseLocation ? (
+               <div className="d-flex flex-column align-items-center justify-content-center h-100 py-5">
+                  <MapPin size={48} className="text-accent mb-3 opacity-50" />
+                  <h5 className="text-white mb-2">Local Sea Conditions</h5>
+                  <p className="text-white opacity-50 small mb-4">Set your base location to see real-time weather and sea data.</p>
+                  <button onClick={() => setIsLocationModalOpen(true)} className="btn btn-accent px-4 py-2">
+                    Set Base Location
+                  </button>
+               </div>
+             ) : (
+               <>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <h5 className="mb-0 d-flex align-items-center gap-2 text-white">
+                    <CloudRain size={20} color="#0AC4E0" />
+                    Conditions at {baseLocation.name}
+                  </h5>
+                  <button onClick={() => setIsLocationModalOpen(true)} className="btn btn-link text-accent p-0 d-flex align-items-center gap-1 text-decoration-none small">
+                    <Edit3 size={14} /> Change
+                  </button>
+                </div>
+
+                {isConditionsLoading ? (
+                  <div className="d-flex justify-content-center align-items-center py-4">
+                    <Loader2 size={32} className="animate-spin text-accent" />
+                  </div>
+                ) : conditions ? (
+                  <div className="row text-center text-white">
+                    <ConditionItem icon={<Thermometer size={32} />} value={`${conditions.airTemp.toFixed(0)}°C`} label="Air" />
+                    <ConditionItem icon={<Waves size={32} />} value={`${conditions.waterTemp.toFixed(1)}°C`} label="Water" />
+                    <ConditionItem 
+                      icon={
+                        <div className="d-flex align-items-center justify-content-center position-relative mx-auto" style={{ width: '32px', height: '32px' }}>
+                          <Wind size={18} className="opacity-25" />
+                          <div 
+                            className="position-absolute d-flex align-items-center justify-content-center"
+                            style={{ 
+                              top: 0, left: 0, right: 0, bottom: 0,
+                              transform: `rotate(${conditions.windDirection}deg)`, 
+                              transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+                            }}
+                          >
+                            <ArrowUp size={32} className="text-accent" />
+                          </div>
+                        </div>
+                      } 
+                      value={`${conditions.windSpeed.toFixed(0)} km/h ${getWindDirection(conditions.windDirection)}`} 
+                      label="Wind" 
+                    />
+                    <ConditionItem icon={<History size={32} />} value={conditions.tideType} label="Tide" />
+                  </div>
+                ) : (
+                  <p className="text-center text-white opacity-50 py-4">Failed to load local sea conditions.</p>
+                )}
+               </>
+             )}
           </div>
         </div>
 
@@ -79,6 +164,12 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <BaseLocationModal 
+        isOpen={isLocationModalOpen} 
+        onClose={() => setIsLocationModalOpen(false)} 
+        onSave={handleLocationSaved}
+      />
 
       {/* Statistics Grid */}
       <div className="row g-4 mb-5">

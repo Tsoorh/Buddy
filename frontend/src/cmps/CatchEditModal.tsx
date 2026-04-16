@@ -3,6 +3,7 @@ import Modal from './Modal';
 import { CatchService, type CatchResponse, type CreateCatch } from '../services/CatchService';
 import { FishService, type FishResponse } from '../services/FishService';
 import { AuthInput } from './AuthShared';
+import { NumberInput } from './NumberInput';
 import { Loader2, Trash2 } from 'lucide-react';
 import DateTimePicker from './DateTimePicker';
 
@@ -100,9 +101,9 @@ const CatchEditModal: React.FC<CatchEditModalProps> = ({ catchItem, isOpen, onCl
 
         <div className="row">
           <div className="col-6">
-            <AuthInput 
-              label="Weight (kg)" type="number" step="0.1" value={formData.weight || 0} 
-              onChange={e => setFormData({...formData, weight: parseFloat(e.target.value)})} 
+            <NumberInput 
+              label="Weight (kg)" step={0.1} value={formData.weight || 0} 
+              onChange={val => setFormData({...formData, weight: val})} 
             />
           </div>
           <div className="col-6">

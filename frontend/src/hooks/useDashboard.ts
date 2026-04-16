@@ -52,7 +52,7 @@ export const useDashboard = () => {
     biggestFish: catches.length > 0 ? Math.max(...catches.map(c => c.weight || 0)) : 0,
     recentCatches: [...catches]
       .sort((a, b) => new Date(b.catch_time || 0).getTime() - new Date(a.catch_time || 0).getTime())
-      .slice(0, 4)
+      .slice(0, 10)
   };
 
   const aiTip = insights?.insights?.[0] || 'Log your first session with catches to start seeing AI analytics!';

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { type SessionDetails, SessionService } from '../services/SessionService';
 import { AuthInput } from './AuthShared';
+import { NumberInput } from './NumberInput';
 import { Loader2, Calendar, MapPin, ArrowDown, Timer, MessageSquare } from 'lucide-react';
 import LocationPicker from './LocationPicker';
 import DateTimePicker from './DateTimePicker';
@@ -110,9 +111,9 @@ const SessionForm: React.FC<SessionFormProps> = ({
           />
         </div>
         <div className="col-md-6 pt-md-0 pt-3">
-           <AuthInput 
-            label="Visibility (m)" type="number" name="visibility" value={formData.visibility || 0} 
-            onChange={onHandleChange} 
+           <NumberInput 
+            label="Visibility (m)" name="visibility" value={formData.visibility || 0} 
+            onChange={(val) => setFormData(prev => ({ ...prev, visibility: val }))} 
           />
         </div>
       </div>
@@ -145,30 +146,30 @@ const SessionForm: React.FC<SessionFormProps> = ({
       </div>
       <div className="row">
         <div className="col-md-6">
-          <AuthInput 
-            label="Min Depth (m)" type="number" name="min_depth" value={formData.min_depth || 0} 
-            onChange={onHandleChange} 
+          <NumberInput 
+            label="Min Depth (m)" name="min_depth" value={formData.min_depth || 0} 
+            onChange={(val) => setFormData(prev => ({ ...prev, min_depth: val }))} 
           />
         </div>
         <div className="col-md-6">
-          <AuthInput 
-            label="Max Depth (m)" type="number" name="max_depth" value={formData.max_depth || 0} 
-            onChange={onHandleChange} 
+          <NumberInput 
+            label="Max Depth (m)" name="max_depth" value={formData.max_depth || 0} 
+            onChange={(val) => setFormData(prev => ({ ...prev, max_depth: val }))} 
           />
         </div>
       </div>
 
       <div className="row">
         <div className="col-md-6">
-          <AuthInput 
-            label="Longest Hold-down (sec)" type="number" name="longest_hold_down_time" value={formData.longest_hold_down_time || 0} 
-            onChange={onHandleChange} 
+          <NumberInput 
+            label="Longest Hold-down (sec)" name="longest_hold_down_time" value={formData.longest_hold_down_time || 0} 
+            onChange={(val) => setFormData(prev => ({ ...prev, longest_hold_down_time: val }))} 
           />
         </div>
         <div className="col-md-6">
-          <AuthInput 
-            label="Deepest Hold-down (m)" type="number" name="longest_hold_down_depth" value={formData.longest_hold_down_depth || 0} 
-            onChange={onHandleChange} 
+          <NumberInput 
+            label="Deepest Hold-down (m)" name="longest_hold_down_depth" value={formData.longest_hold_down_depth || 0} 
+            onChange={(val) => setFormData(prev => ({ ...prev, longest_hold_down_depth: val }))} 
           />
         </div>
       </div>
