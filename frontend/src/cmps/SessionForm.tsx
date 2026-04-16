@@ -102,9 +102,10 @@ const SessionForm: React.FC<SessionFormProps> = ({
           <DateTimePicker 
             label="Date" 
             value={formData.date || ''} 
+            showTime={false}
             onChange={(val) => setFormData(prev => ({ 
               ...prev, 
-              date: val.split('T')[0] 
+              date: val
             }))} 
           />
         </div>

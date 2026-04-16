@@ -6,9 +6,10 @@ interface DateTimePickerProps {
   value: string; // ISO string or datetime-local string
   onChange: (value: string) => void;
   label?: string;
+  showTime?: boolean;
 }
 
-const DateTimePicker: React.FC<DateTimePickerProps> = ({ value, onChange, label }) => {
+const DateTimePicker: React.FC<DateTimePickerProps> = ({ value, onChange, label, showTime = true }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const hourScrollRef = useRef<HTMLDivElement>(null);
@@ -19,7 +20,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ value, onChange, label 
   const [currentMonth, setCurrentMonth] = useState(new Date(dateObj.getFullYear(), dateObj.getMonth(), 1));
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && showTime) {
       // Auto-scroll to selected time with a small delay to ensure DOM is ready
       setTimeout(() => {
         const hour = dateObj.getHours();
@@ -39,7 +40,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ value, onChange, label 
         }
       }, 10);
     }
-  }, [isOpen]);
+  }, [isOpen, showTime]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -53,7 +54,9 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ value, onChange, label 
 
   const formatDateForInput = (date: Date) => {
     const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    const datePart = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    if (!showTime) return datePart;
+    return `${datePart}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
   };
 
   const handleDateSelect = (day: number) => {
@@ -62,6 +65,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ value, onChange, label 
     newDate.setMonth(currentMonth.getMonth());
     newDate.setDate(day);
     onChange(formatDateForInput(newDate));
+    if (!showTime) setIsOpen(false);
   };
 
   const handleTimeChange = (type: 'hour' | 'minute', val: number) => {
@@ -115,7 +119,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ value, onChange, label 
           type="text" 
           className="auth-input w-100" 
           readOnly 
-          value={value ? value.replace('T', ' ') : 'Select Date & Time'} 
+          value={value ? (showTime ? value.replace('T', ' ') : value.split('T')[0]) : `Select ${showTime ? 'Date & Time' : 'Date'}`} 
         />
         <CalendarIcon className="picker-icon" size={18} />
       </div>
@@ -148,33 +152,35 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ value, onChange, label 
             </div>
 
             {/* Right: Time Picker */}
-            <div className="time-section">
-              <div className="time-picker-visual-guide"></div>
-              <div className="time-column-header">Hour</div>
-              <div className="time-scroll-container" ref={hourScrollRef}>
-                {Array.from({ length: 24 }).map((_, i) => (
-                  <div 
-                    key={i} 
-                    className={`time-item ${dateObj.getHours() === i ? 'selected' : ''}`}
-                    onClick={() => handleTimeChange('hour', i)}
-                  >
-                    {i.toString().padStart(2, '0')}
-                  </div>
-                ))}
+            {showTime && (
+              <div className="time-section">
+                <div className="time-picker-visual-guide"></div>
+                <div className="time-column-header">Hour</div>
+                <div className="time-scroll-container" ref={hourScrollRef}>
+                  {Array.from({ length: 24 }).map((_, i) => (
+                    <div 
+                      key={i} 
+                      className={`time-item ${dateObj.getHours() === i ? 'selected' : ''}`}
+                      onClick={() => handleTimeChange('hour', i)}
+                    >
+                      {i.toString().padStart(2, '0')}
+                    </div>
+                  ))}
+                </div>
+                <div className="time-column-header mt-2">Min</div>
+                <div className="time-scroll-container" ref={minScrollRef}>
+                  {Array.from({ length: 60 }).map((_, i) => (
+                    <div 
+                      key={i} 
+                      className={`time-item ${dateObj.getMinutes() === i ? 'selected' : ''}`}
+                      onClick={() => handleTimeChange('minute', i)}
+                    >
+                      {i.toString().padStart(2, '0')}
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="time-column-header mt-2">Min</div>
-              <div className="time-scroll-container" ref={minScrollRef}>
-                {Array.from({ length: 60 }).map((_, i) => (
-                  <div 
-                    key={i} 
-                    className={`time-item ${dateObj.getMinutes() === i ? 'selected' : ''}`}
-                    onClick={() => handleTimeChange('minute', i)}
-                  >
-                    {i.toString().padStart(2, '0')}
-                  </div>
-                ))}
-              </div>
-            </div>
+            )}
           </div>
           <button className="picker-close" onClick={() => setIsOpen(false)}>
             <X size={16} />
