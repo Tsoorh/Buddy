@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { type SessionDetails, SessionService } from '../services/SessionService';
-import { AuthInput } from './AuthShared';
+
 import { NumberInput } from './NumberInput';
 import { Loader2, Calendar, MapPin, ArrowDown, Timer, MessageSquare } from 'lucide-react';
 import LocationPicker from './LocationPicker';
@@ -33,6 +33,24 @@ const SessionForm: React.FC<SessionFormProps> = ({
   });
 
   const [recentLocations, setRecentLocations] = useState<string[]>([]);
+
+  const getErrors = () => {
+    const errors: Record<string, string> = {};
+    if (!formData.location_name?.trim()) errors.location_name = 'Location name is required';
+    if ((formData.visibility || 0) < 0) errors.visibility = 'Visibility must be 0 or more';
+    if ((formData.max_depth || 0) < (formData.min_depth || 0)) errors.max_depth = 'Max depth cannot be less than min depth';
+    if ((formData.longest_hold_down_depth || 0) > (formData.max_depth || 0)) errors.longest_hold_down_depth = 'Hold-down depth cannot exceed session max depth';
+    
+    if (formData.entry_time && formData.exit_time) {
+      if (new Date(formData.exit_time) <= new Date(formData.entry_time)) {
+        errors.exit_time = 'Exit time must be after entry time';
+      }
+    }
+    return errors;
+  };
+
+  const errors = getErrors();
+  const isValid = Object.keys(errors).length === 0;
 
   useEffect(() => {
     const fetchRecentLocations = async () => {
@@ -230,7 +248,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
         <label className="form-check-label text-white small" htmlFor="isPublicSession">Public Session</label>
       </div>
 
-      <button type="submit" className="btn btn-accent w-100 py-3 shadow d-flex align-items-center justify-content-center gap-2" disabled={isLoading}>
+      <button type="submit" className="btn btn-accent w-100 py-3 shadow d-flex align-items-center justify-content-center gap-2" disabled={isLoading || !isValid}>
         {isLoading ? <Loader2 className="animate-spin" size={20} /> : buttonText}
       </button>
     </form>

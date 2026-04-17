@@ -17,7 +17,7 @@ const ForgotPassword: React.FC = () => {
       setIsLoading(true);
       await AuthService.forgotPasswordApi(email);
       setMessage("If an account with that email exists, a password reset email has been sent.");
-    } catch (err: unknown) {
+    } catch {
       setError("An error occurred. Please try again later.");
     } finally {
       setIsLoading(false);

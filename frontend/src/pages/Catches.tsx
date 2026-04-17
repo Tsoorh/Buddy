@@ -21,7 +21,7 @@ const Catches: React.FC = () => {
       setIsLoading(true);
       const data = await CatchService.getCatchesApi();
       setCatches(data);
-    } catch (err) {
+    } catch {
       setError('Failed to load catches.');
     } finally {
       setIsLoading(false);
@@ -43,7 +43,7 @@ const Catches: React.FC = () => {
       await CatchService.deleteCatchApi(id);
       setCatches(prev => prev.filter(c => c.id !== id));
       alert('Catch deleted successfully!');
-    } catch (err) {
+    } catch {
       alert('Failed to delete catch.');
     }
   };

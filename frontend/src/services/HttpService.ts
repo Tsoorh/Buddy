@@ -21,7 +21,7 @@ HttpService.interceptors.request.use(
 
 // Response interceptor: Handle 401 & Token Refresh
 let isRefreshing = false;
-let failedQueue: Array<{ resolve: (value: unknown) => void; reject: (reason?: any) => void }> = [];
+let failedQueue: Array<{ resolve: (value: unknown) => void; reject: (reason?: unknown) => void }> = [];
 
 const processQueue = (error: AxiosError | null, token: string | null = null) => {
   failedQueue.forEach(prom => error ? prom.reject(error) : prom.resolve(token));

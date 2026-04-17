@@ -20,7 +20,7 @@ const Sessions: React.FC = () => {
       setIsLoading(true);
       const data = await SessionService.getSessionsApi();
       setSessions(data);
-    } catch (err) {
+    } catch {
       setError('Failed to load sessions.');
     } finally {
       setIsLoading(false);
@@ -47,7 +47,7 @@ const Sessions: React.FC = () => {
       await SessionService.deleteSessionApi(id);
       setSessions(prev => prev.filter(s => s.id !== id));
       alert('Session deleted successfully!');
-    } catch (err) {
+    } catch {
       alert('Failed to delete session.');
     }
   };

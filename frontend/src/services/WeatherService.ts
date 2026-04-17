@@ -49,7 +49,7 @@ export const WeatherService = {
       const hourlyTimes = weatherData.hourly.time;
       const timeIndex = hourlyTimes.indexOf(hourStr) !== -1 ? hourlyTimes.indexOf(hourStr) : 0;
 
-      const getVal = (data: any, key: string) => data.hourly[key][timeIndex];
+      const getVal = (data: { hourly: Record<string, number[]> }, key: string) => data.hourly[key][timeIndex];
 
       // Enhanced Tide logic: Determine trend (Rising/Falling) and peak status
       const seaLevels: number[] = marineData.hourly.sea_level_height_msl;

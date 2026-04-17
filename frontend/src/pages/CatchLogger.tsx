@@ -35,6 +35,18 @@ const CatchLogger: React.FC = () => {
     catch_time: new Date().toISOString().slice(0, 16)
   });
 
+  const getStep2Errors = () => {
+    const errors: Record<string, string> = {};
+    if (!catchData.fish_id) errors.fish_id = 'Species is required';
+    if (catchData.weight && parseFloat(catchData.weight) <= 0) {
+      errors.weight = 'Weight must be greater than 0';
+    }
+    return errors;
+  };
+
+  const step2Errors = getStep2Errors();
+  const isStep2Valid = Object.keys(step2Errors).length === 0;
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const fetchInitialData = async () => {
@@ -162,7 +174,7 @@ const CatchLogger: React.FC = () => {
             <div className="mb-3">
               <label className="form-label text-white">Species</label>
               <select 
-                className="form-select auth-input" required
+                className={`form-select auth-input ${step2Errors.fish_id ? 'border-danger' : ''}`} required
                 value={catchData.fish_id}
                 onChange={e => setCatchData({...catchData, fish_id: e.target.value})}
               >
@@ -171,6 +183,7 @@ const CatchLogger: React.FC = () => {
                   <option key={f.id} value={f.id}>{f.en_name} ({f.he_name})</option>
                 ))}
               </select>
+              {step2Errors.fish_id && <small className="text-danger d-block mt-1">{step2Errors.fish_id}</small>}
             </div>
             <div className="row mb-3">
               <div className="col-6">
@@ -179,6 +192,7 @@ const CatchLogger: React.FC = () => {
                   step={0.1}
                   value={Number(catchData.weight) || 0}
                   onChange={val => setCatchData({...catchData, weight: val.toString()})}
+                  hint={step2Errors.weight}
                 />
               </div>
               <div className="col-6">
@@ -264,7 +278,7 @@ const CatchLogger: React.FC = () => {
                     type="button" 
                     className="btn btn-accent px-4 d-flex align-items-center gap-2"
                     onClick={onHandleNext}
-                    disabled={step === 1 && !selectedSessionId}
+                    disabled={(step === 1 && !selectedSessionId) || (step === 2 && !isStep2Valid)}
                   >
                     Next <ChevronRight size={20} />
                   </button>
@@ -272,7 +286,7 @@ const CatchLogger: React.FC = () => {
                   <button 
                     type="submit" 
                     className="btn btn-accent px-5 d-flex align-items-center gap-2"
-                    disabled={isLoading || !catchData.fish_id}
+                    disabled={isLoading || !isStep2Valid}
                   >
                     {isLoading ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />} 
                     Save Catch

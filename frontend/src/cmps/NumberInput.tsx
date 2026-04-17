@@ -83,7 +83,7 @@ export const NumberInput: React.FC<NumberInputProps> = ({
           <Plus size={18} />
         </button>
       </div>
-      {hint && <small className="auth-hint d-block mt-1">{hint}</small>}
+      {hint && <small className={`auth-hint d-block mt-1 ${hint.toLowerCase().includes('must') || hint.toLowerCase().includes('cannot') || hint.toLowerCase().includes('error') ? 'text-danger' : ''}`}>{hint}</small>}
     </div>
   )
 }
