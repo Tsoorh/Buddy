@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, UploadFile
+from fastapi import Depends, HTTPException, UploadFile, BackgroundTasks
 from .service import CatchService
 from .model import CatchFilterBy, CatchResponse, Catch
 from app.service.file_service import FileService
@@ -27,9 +27,9 @@ class CatchController:
                 status_code=500, detail="Internal server error while fetching catches"
             )
 
-    async def add_catch(self, catch: Catch) -> uuid.UUID:
+    async def add_catch(self, catch: Catch, background_tasks: BackgroundTasks) -> uuid.UUID:
         try:
-            return await self.service.add_catch(catch)
+            return await self.service.add_catch(catch, background_tasks)
         except Exception:
             raise HTTPException(
                 status_code=500,

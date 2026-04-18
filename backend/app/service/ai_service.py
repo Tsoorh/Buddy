@@ -39,18 +39,24 @@ class AiService:
             }
 
         prompt = f"""
-        You are a Professional Fishing Data Analyst. 
-        Analyze the following user fishing data (Success Matrix). 
-        Your goal is to find mathematical correlations between environmental factors and catch success.
+        You are a Professional Spear-fishing Data Analyst. 
+        Analyze the following user fishing data (Success Matrix), which includes dive statistics, 
+        environmental conditions, and specific catch results (species and weights).
         
         DATA:
         {json.dumps(success_matrix, indent=2)}
         
+        GOAL:
+        Identify mathematical correlations and specific behavioral patterns.
+        
         REQUIREMENTS:
         1. Provide 3-5 short, punchy insights.
-        2. Conclusions MUST be data-driven (e.g., 'You caught 67% more fish on rising tides').
-        3. Identify the 'Optimal Conditions' summary for this specific user.
-        4. Be concise. Do not give generic advice.
+        2. Insights MUST be specific and data-driven. Focus on:
+           - Correlations between specific fish species and dive depths (e.g., 'You catch 80% of your Groupers at depths > 18m').
+           - Impact of visibility or hold-down times on success rate for specific species.
+           - Ideal environmental windows (tide/moon/temp) combined with your diving performance.
+        3. Identify the 'Optimal Conditions' summary specifically for this user's best hunting results.
+        4. Be concise and professional. Do not give generic fishing advice.
         5. Respond ONLY in valid JSON format with keys:
            - "insights": an array of strings.
            - "optimal_conditions": a single concise string.

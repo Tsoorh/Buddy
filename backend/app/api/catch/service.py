@@ -1,5 +1,5 @@
 from app.service.db_service import DbService
-from fastapi import Depends
+from fastapi import Depends, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import select, insert, Select, or_, update, delete
@@ -7,6 +7,7 @@ from sqlalchemy.orm import selectinload
 from app.base import Catch as CatchBase, Session as SessionBase, CatchMedia
 from .model import Catch, CatchFilterBy, CatchResponse
 from app.service.file_service import FileService
+from app.api.analytics.service import AnalyticsService
 from typing import List, Optional, Dict, Any
 import uuid
 from app.core.logger import setup_logger
@@ -38,7 +39,7 @@ class CatchService:
             raise
 
     # add
-    async def add_catch(self, catch: Catch) -> uuid.UUID:
+    async def add_catch(self, catch: Catch, background_tasks: BackgroundTasks) -> uuid.UUID:
         if not catch:
             raise ValueError("No catch to add")
 
@@ -47,7 +48,13 @@ class CatchService:
         try:
             response = await self.db.execute(query)
             await self.db.commit()
-            return response.scalar_one()
+            catch_id = response.scalar_one()
+            
+            # Trigger AI insight refresh
+            if catch.user_id:
+                background_tasks.add_task(AnalyticsService.trigger_background_refresh, catch.user_id)
+                
+            return catch_id
         except SQLAlchemyError:
             await self.db.rollback()
             app_logger.exception("Couldn't add catch")

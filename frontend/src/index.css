@@ -184,3 +184,28 @@ input[type="number"] {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* --- Tip Spinner Dots --- */
+.tip-dots {
+  display: flex;
+  gap: 8px;
+  margin-top: 1.5rem;
+  justify-content: center;
+}
+
+.tip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  padding: 0;
+}
+
+.tip-dot.active {
+  background: var(--accent-cyan);
+  transform: scale(1.2);
+  box-shadow: 0 0 8px var(--accent-cyan);
+}

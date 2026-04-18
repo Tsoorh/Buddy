@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File
+from fastapi import APIRouter, Depends, UploadFile, File, BackgroundTasks
 from .model import CatchResponse
 from typing import Optional, List, Dict, Any
 from pydantic import UUID4
@@ -38,8 +38,10 @@ async def get_catches(
 @router.post(
     "/", response_model=UUID4, dependencies=[Depends(get_current_user)]
 )  # return the new catch id
-async def add_catch(catch: Catch, controller: CatchController = Depends()) -> UUID4:
-    return await controller.add_catch(catch)
+async def add_catch(
+    catch: Catch, background_tasks: BackgroundTasks, controller: CatchController = Depends()
+) -> UUID4:
+    return await controller.add_catch(catch, background_tasks)
 
 
 @router.put(

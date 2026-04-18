@@ -9,6 +9,7 @@ import HorizontalScroll from '../cmps/HorizontalScroll';
 import BaseLocationModal from '../cmps/BaseLocationModal';
 import { UserSettingsService, type UserLocation } from '../services/UserSettingsService';
 import { WeatherService, type CurrentConditions } from '../services/WeatherService';
+import { AnalyticsService } from '../services/AnalyticsService';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -19,6 +20,7 @@ const Dashboard: React.FC = () => {
   const [isConditionsLoading, setIsConditionsLoading] = useState(false);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
+  const [isRefreshingTips, setIsRefreshingTips] = useState(false);
 
   useEffect(() => {
     if (aiTips.length <= 1) return;
@@ -53,6 +55,20 @@ const Dashboard: React.FC = () => {
   const handleLocationSaved = (loc: UserLocation) => {
     setBaseLocation(loc);
     fetchConditions(loc.lat, loc.lng);
+  };
+
+  const onRefreshTips = async () => {
+    try {
+      setIsRefreshingTips(true);
+      await AnalyticsService.getInsightsApi(); 
+      // Refresh the page or the specific data to see changes
+      window.location.reload();
+    } catch (err) {
+      console.error('Failed to refresh tips', err);
+      alert('AI service is currently busy or quota reached. Please try again later.');
+    } finally {
+      setIsRefreshingTips(false);
+    }
   };
 
   const getWindDirection = (deg: number) => {
@@ -166,14 +182,39 @@ const Dashboard: React.FC = () => {
         </div>
 
         <div className="col-lg-4">
-          <div className="glass-card h-100 border-0 bg-gradient-cyan">
-            <h5 className="mb-3 d-flex align-items-center gap-2" style={{ color: '#0AC4E0' }}>
-              <BrainCircuit size={20} />
-              AI Pro Tip
-            </h5>
-            <div key={currentTipIndex} className="animate-fade-in">
-               <p className="mb-0 fs-5 text-sand italic">"{aiTips[currentTipIndex]}"</p>
+          <div className="glass-card h-100 border-0 bg-gradient-cyan d-flex flex-column">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="mb-0 d-flex align-items-center gap-2" style={{ color: '#0AC4E0' }}>
+                <BrainCircuit size={20} />
+                AI Pro Tip
+              </h5>
+              <button 
+                onClick={onRefreshTips} 
+                className="btn btn-link text-accent p-0" 
+                disabled={isRefreshingTips}
+                title="Refresh Insights"
+              >
+                <History size={16} className={isRefreshingTips ? 'animate-spin' : ''} />
+              </button>
             </div>
+            <div className="flex-grow-1">
+              <div key={currentTipIndex} className="animate-fade-in">
+                 <p className="mb-0 fs-5 text-sand italic">"{aiTips[currentTipIndex]}"</p>
+              </div>
+            </div>
+            
+            {aiTips.length > 1 && (
+              <div className="tip-dots mt-auto">
+                {aiTips.map((_, idx) => (
+                  <button
+                    key={idx}
+                    className={`tip-dot ${idx === currentTipIndex ? 'active' : ''}`}
+                    onClick={() => setCurrentTipIndex(idx)}
+                    aria-label={`Go to tip ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>      </div>
 

@@ -87,6 +87,10 @@ class UserInsight(Base):
     insights: Mapped[Optional[List[str]]] = mapped_column(JSON)
     optimal_conditions: Mapped[Optional[str]] = mapped_column(String)
     generated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    
+    # New tracking fields to prevent redundant AI calls
+    last_analyzed_sessions: Mapped[int] = mapped_column(Integer, default=0)
+    last_analyzed_catches: Mapped[int] = mapped_column(Integer, default=0)
 
     user: Mapped["User"] = relationship()
 

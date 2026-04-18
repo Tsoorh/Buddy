@@ -14,13 +14,6 @@ import uuid
 
 app_logger = setup_logger("app_logger")
 
-async def refresh_insights_task(user_id: uuid.UUID):
-    # This needs to be a standalone function for background tasks
-    async for db in DbService.get_db():
-        analytics = AnalyticsService(db)
-        await analytics.refresh_user_insights(user_id)
-        break
-
 class SessionService:
     def __init__(self, db: AsyncSession = Depends(DbService.get_db)):
         self.db = db
@@ -62,8 +55,10 @@ class SessionService:
                     longitude=session.longitude,
                     entry_time=session.entry_time,
                 )
-                # After conditions are saved, refresh AI insights
-                background_tasks.add_task(refresh_insights_task, user_id=session.user_id)
+                
+            # Always trigger background task to refresh AI insights
+            if session.user_id:
+                background_tasks.add_task(AnalyticsService.trigger_background_refresh, user_id=session.user_id)
 
             return session_id
         except Exception:
