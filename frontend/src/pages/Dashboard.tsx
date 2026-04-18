@@ -12,12 +12,23 @@ import { WeatherService, type CurrentConditions } from '../services/WeatherServi
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const { sessions, stats, aiTip, isLoading: isDashboardLoading, error: dashboardError } = useDashboard();
+  const { sessions, stats, aiTips, isLoading: isDashboardLoading, error: dashboardError } = useDashboard();
   
   const [baseLocation, setBaseLocation] = useState<UserLocation | null>(null);
   const [conditions, setConditions] = useState<CurrentConditions | null>(null);
   const [isConditionsLoading, setIsConditionsLoading] = useState(false);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [currentTipIndex, setCurrentTipIndex] = useState(0);
+
+  useEffect(() => {
+    if (aiTips.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentTipIndex(prev => (prev + 1) % aiTips.length);
+    }, 8000); // Cycle every 8 seconds
+
+    return () => clearInterval(interval);
+  }, [aiTips]);
 
   useEffect(() => {
     const loc = UserSettingsService.getLocalLocation();
@@ -160,10 +171,11 @@ const Dashboard: React.FC = () => {
               <BrainCircuit size={20} />
               AI Pro Tip
             </h5>
-            <p className="mb-0 fs-5 text-sand italic">"{aiTip}"</p>
+            <div key={currentTipIndex} className="animate-fade-in">
+               <p className="mb-0 fs-5 text-sand italic">"{aiTips[currentTipIndex]}"</p>
+            </div>
           </div>
-        </div>
-      </div>
+        </div>      </div>
 
       <BaseLocationModal 
         isOpen={isLocationModalOpen} 

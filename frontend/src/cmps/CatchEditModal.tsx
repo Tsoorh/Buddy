@@ -114,7 +114,7 @@ const CatchEditModal: React.FC<CatchEditModalProps> = ({
         <div className="mb-3">
           <label className="auth-label">Species</label>
           <select
-            className="form-select auth-input"
+            className={`form-select auth-input ${errorsList.fish_id ? 'border-danger' : ''}`}
             required
             value={formData.fish_id || ""}
             onChange={(e) =>
@@ -128,6 +128,7 @@ const CatchEditModal: React.FC<CatchEditModalProps> = ({
               </option>
             ))}
           </select>
+          {errorsList.fish_id && <small className="text-danger d-block mt-1">{errorsList.fish_id}</small>}
         </div>
 
         <div className="row">
@@ -137,6 +138,7 @@ const CatchEditModal: React.FC<CatchEditModalProps> = ({
               step={0.1}
               value={formData.weight || 0}
               onChange={(val) => setFormData({ ...formData, weight: val })}
+              hint={errorsList.weight}
             />
           </div>
           <div className="col-6">

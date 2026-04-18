@@ -55,7 +55,9 @@ export const useDashboard = () => {
       .slice(0, 10)
   };
 
-  const aiTip = insights?.insights?.[0] || 'Log your first session with catches to start seeing AI analytics!';
+  const aiTips = insights?.insights?.length 
+    ? insights.insights 
+    : ['Log your first session with catches to start seeing AI analytics!'];
 
-  return { catches, insights, sessions, stats, aiTip, isLoading, error };
+  return { catches, insights, sessions, stats, aiTips, isLoading, error };
 };

@@ -46,6 +46,9 @@ const SessionForm: React.FC<SessionFormProps> = ({
         errors.exit_time = 'Exit time must be after entry time';
       }
     }
+    if (formData.entry_time && formData.date && formData.entry_time.split('T')[0] !== formData.date) {
+      errors.entry_time = 'Entry date must match the session date';
+    }
     return errors;
   };
 
@@ -104,13 +107,14 @@ const SessionForm: React.FC<SessionFormProps> = ({
         <label className="auth-label">Location Name</label>
         <input 
           name="location_name"
-          className="auth-input w-100"
+          className={`auth-input w-100 ${errors.location_name ? 'border-danger' : ''}`}
           required 
           value={formData.location_name || ''} 
           onChange={onHandleChange} 
           placeholder="e.g. North Beach, Eilat"
           list="recent-locations"
         />
+        {errors.location_name && <small className="text-danger d-block mt-1">{errors.location_name}</small>}
         <datalist id="recent-locations">
           {recentLocations.map(loc => <option key={loc} value={loc} />)}
         </datalist>
@@ -132,6 +136,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
            <NumberInput 
             label="Visibility (m)" name="visibility" value={formData.visibility || 0} 
             onChange={(val) => setFormData(prev => ({ ...prev, visibility: val }))} 
+            hint={errors.visibility}
           />
         </div>
       </div>
@@ -173,6 +178,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
           <NumberInput 
             label="Max Depth (m)" name="max_depth" value={formData.max_depth || 0} 
             onChange={(val) => setFormData(prev => ({ ...prev, max_depth: val }))} 
+            hint={errors.max_depth}
           />
         </div>
       </div>
@@ -188,6 +194,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
           <NumberInput 
             label="Deepest Hold-down (m)" name="longest_hold_down_depth" value={formData.longest_hold_down_depth || 0} 
             onChange={(val) => setFormData(prev => ({ ...prev, longest_hold_down_depth: val }))} 
+            hint={errors.longest_hold_down_depth}
           />
         </div>
       </div>
@@ -211,6 +218,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
                 }));
               }} 
             />
+            {errors.entry_time && <small className="text-danger d-block mt-1">{errors.entry_time}</small>}
           </div>
           <div className="col-md-6">
             <DateTimePicker 
@@ -218,6 +226,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
               value={formData.exit_time || ''} 
               onChange={(val) => setFormData(prev => ({ ...prev, exit_time: val }))} 
             />
+            {errors.exit_time && <small className="text-danger d-block mt-1">{errors.exit_time}</small>}
           </div>
         </div>
       </div>

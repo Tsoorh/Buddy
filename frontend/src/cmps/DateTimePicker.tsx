@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X, Check } from 'lucide-react';
 import './DateTimePicker.css';
 
 interface DateTimePickerProps {
@@ -60,10 +60,25 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ value, onChange, label,
   };
 
   const handleDateSelect = (day: number) => {
+    const today = new Date();
+    const selectedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    
+    // Reset hours for pure date comparison
+    today.setHours(0, 0, 0, 0);
+    if (selectedDate > today) return;
+
     const newDate = new Date(dateObj);
     newDate.setFullYear(currentMonth.getFullYear());
     newDate.setMonth(currentMonth.getMonth());
     newDate.setDate(day);
+    
+    // If selected today, ensure time isn't in future
+    if (newDate > new Date()) {
+      const now = new Date();
+      newDate.setHours(now.getHours());
+      newDate.setMinutes(now.getMinutes());
+    }
+
     onChange(formatDateForInput(newDate));
     if (!showTime) setIsOpen(false);
   };
@@ -72,6 +87,9 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ value, onChange, label,
     const newDate = new Date(dateObj);
     if (type === 'hour') newDate.setHours(val);
     else newDate.setMinutes(val);
+    
+    if (newDate > new Date()) return;
+    
     onChange(formatDateForInput(newDate));
   };
 
@@ -88,6 +106,8 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ value, onChange, label,
     const days = [];
     const totalDays = daysInMonth(currentMonth.getFullYear(), currentMonth.getMonth());
     const startDay = firstDayOfMonth(currentMonth.getFullYear(), currentMonth.getMonth());
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
 
     // Padding for first week
     for (let i = 0; i < startDay; i++) {
@@ -98,11 +118,15 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ value, onChange, label,
       const isSelected = dateObj.getDate() === d && 
                          dateObj.getMonth() === currentMonth.getMonth() && 
                          dateObj.getFullYear() === currentMonth.getFullYear();
+      
+      const dateToCheck = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), d);
+      const isFuture = dateToCheck > now;
+
       days.push(
         <div 
           key={d} 
-          className={`calendar-day ${isSelected ? 'selected' : ''}`}
-          onClick={() => handleDateSelect(d)}
+          className={`calendar-day ${isSelected ? 'selected' : ''} ${isFuture ? 'disabled' : ''}`}
+          onClick={() => !isFuture && handleDateSelect(d)}
         >
           {d}
         </div>
@@ -148,6 +172,9 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ value, onChange, label,
               </div>
               <div className="picker-footer">
                 <button type="button" className="btn-now" onClick={handleNow}>Now</button>
+                <button type="button" className="btn-approve" onClick={() => setIsOpen(false)}>
+                  <Check size={14} className="me-1" /> Approve
+                </button>
               </div>
             </div>
 
@@ -157,27 +184,37 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({ value, onChange, label,
                 <div className="time-picker-visual-guide"></div>
                 <div className="time-column-header">Hour</div>
                 <div className="time-scroll-container" ref={hourScrollRef}>
-                  {Array.from({ length: 24 }).map((_, i) => (
-                    <div 
-                      key={i} 
-                      className={`time-item ${dateObj.getHours() === i ? 'selected' : ''}`}
-                      onClick={() => handleTimeChange('hour', i)}
-                    >
-                      {i.toString().padStart(2, '0')}
-                    </div>
-                  ))}
+                  {Array.from({ length: 24 }).map((_, i) => {
+                    const checkDate = new Date(dateObj);
+                    checkDate.setHours(i);
+                    const isFuture = checkDate > new Date();
+                    return (
+                      <div 
+                        key={i} 
+                        className={`time-item ${dateObj.getHours() === i ? 'selected' : ''} ${isFuture ? 'disabled' : ''}`}
+                        onClick={() => !isFuture && handleTimeChange('hour', i)}
+                      >
+                        {i.toString().padStart(2, '0')}
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className="time-column-header mt-2">Min</div>
                 <div className="time-scroll-container" ref={minScrollRef}>
-                  {Array.from({ length: 60 }).map((_, i) => (
-                    <div 
-                      key={i} 
-                      className={`time-item ${dateObj.getMinutes() === i ? 'selected' : ''}`}
-                      onClick={() => handleTimeChange('minute', i)}
-                    >
-                      {i.toString().padStart(2, '0')}
-                    </div>
-                  ))}
+                  {Array.from({ length: 60 }).map((_, i) => {
+                    const checkDate = new Date(dateObj);
+                    checkDate.setMinutes(i);
+                    const isFuture = checkDate > new Date();
+                    return (
+                      <div 
+                        key={i} 
+                        className={`time-item ${dateObj.getMinutes() === i ? 'selected' : ''} ${isFuture ? 'disabled' : ''}`}
+                        onClick={() => !isFuture && handleTimeChange('minute', i)}
+                      >
+                        {i.toString().padStart(2, '0')}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

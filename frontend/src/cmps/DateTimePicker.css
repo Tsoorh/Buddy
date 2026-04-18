@@ -120,6 +120,17 @@
   box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
 }
 
+.calendar-day.disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.calendar-day.disabled:hover {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+}
+
 .calendar-day.empty {
   cursor: default;
 }
@@ -190,6 +201,12 @@
   transform: scale(1.1);
 }
 
+.time-item.disabled {
+  opacity: 0.1;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .time-picker-visual-guide {
   position: absolute;
   left: 16px;
@@ -224,6 +241,25 @@
 .btn-now:hover {
   background: rgba(0, 212, 255, 0.2);
   border-color: var(--accent-cyan, #00d4ff);
+}
+
+.btn-approve {
+  background: var(--accent-cyan, #00d4ff);
+  border: 1px solid var(--accent-cyan, #00d4ff);
+  color: #0a192f;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  float: right;
+}
+
+.btn-approve:hover {
+  background: white;
+  border-color: white;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
 }
 
 .picker-close {
