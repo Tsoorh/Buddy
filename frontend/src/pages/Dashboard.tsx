@@ -149,9 +149,10 @@ const Dashboard: React.FC = () => {
                     <Loader2 size={32} className="animate-spin text-accent" />
                   </div>
                 ) : conditions ? (
-                  <div className="row text-center text-white">
+                  <div className="row text-center text-white g-2">
                     <ConditionItem icon={<Thermometer size={32} />} value={`${conditions.airTemp.toFixed(0)}°C`} label="Air" />
                     <ConditionItem icon={<Waves size={32} />} value={`${conditions.waterTemp.toFixed(1)}°C`} label="Water" />
+                    <ConditionItem icon={<Waves size={32} />} value={`${conditions.waveHeight.toFixed(1)}m`} label="Wave" />
                     <ConditionItem 
                       icon={
                         <div className="d-flex align-items-center justify-content-center position-relative mx-auto" style={{ width: '32px', height: '32px' }}>
@@ -260,7 +261,7 @@ const Dashboard: React.FC = () => {
 /* --- Sub-Components for Cleanliness --- */
 
 const ConditionItem: React.FC<{ icon: React.ReactNode, value: string, label: string }> = ({ icon, value, label }) => (
-  <div className="col-3">
+  <div className="col">
     <div className="opacity-75 mb-2">{icon}</div>
     <div className="h4 mb-0">{value}</div>
     <div className="small opacity-50">{label}</div>

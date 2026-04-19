@@ -7,6 +7,7 @@ export interface CurrentConditions {
   windDirection: number;
   tideType: string;
   weatherCode: number;
+  waveHeight: number;
 }
 
 export const WeatherService = {
@@ -29,12 +30,12 @@ export const WeatherService = {
         }
       });
 
-      // 2. Marine API (Water Temp, Tide/Sea Level)
+      // 2. Marine API (Water Temp, Tide/Sea Level, Waves)
       const marinePromise = axios.get('https://marine-api.open-meteo.com/v1/marine', {
         params: {
           latitude: lat,
           longitude: lng,
-          hourly: 'sea_surface_temperature,sea_level_height_msl',
+          hourly: 'sea_surface_temperature,sea_level_height_msl,wave_height',
           timezone: 'auto',
           start_date: dateStr,
           end_date: dateStr,
@@ -49,7 +50,7 @@ export const WeatherService = {
       const hourlyTimes = weatherData.hourly.time;
       const timeIndex = hourlyTimes.indexOf(hourStr) !== -1 ? hourlyTimes.indexOf(hourStr) : 0;
 
-      const getVal = (data: { hourly: Record<string, number[]> }, key: string) => data.hourly[key][timeIndex];
+      const getVal = (data: { hourly: Record<string, any> }, key: string) => data.hourly[key][timeIndex];
 
       // Enhanced Tide logic: Determine trend (Rising/Falling) and peak status
       const seaLevels: number[] = marineData.hourly.sea_level_height_msl;
@@ -80,6 +81,7 @@ export const WeatherService = {
         windDirection: getVal(weatherData, 'winddirection_10m'),
         weatherCode: getVal(weatherData, 'weathercode'),
         waterTemp: getVal(marineData, 'sea_surface_temperature'),
+        waveHeight: getVal(marineData, 'wave_height'),
         tideType
       };
     } catch (err) {

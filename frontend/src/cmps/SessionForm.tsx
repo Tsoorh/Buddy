@@ -29,6 +29,8 @@ const SessionForm: React.FC<SessionFormProps> = ({
     longest_hold_down_depth: initialData?.longest_hold_down_depth || 0,
     entry_time: initialData?.entry_time ? new Date(initialData.entry_time).toISOString().slice(0, 16) : '',
     exit_time: initialData?.exit_time ? new Date(initialData.exit_time).toISOString().slice(0, 16) : '',
+    visibility: initialData?.visibility || 0,
+    wave_height: initialData?.wave_height || 0,
     free_text: initialData?.free_text || '',
   });
 
@@ -38,6 +40,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
     const errors: Record<string, string> = {};
     if (!formData.location_name?.trim()) errors.location_name = 'Location name is required';
     if ((formData.visibility || 0) < 0) errors.visibility = 'Visibility must be 0 or more';
+    if ((formData.wave_height || 0) < 0) errors.wave_height = 'Wave height must be 0 or more';
     if ((formData.max_depth || 0) < (formData.min_depth || 0)) errors.max_depth = 'Max depth cannot be less than min depth';
     if ((formData.longest_hold_down_depth || 0) > (formData.max_depth || 0)) errors.longest_hold_down_depth = 'Hold-down depth cannot exceed session max depth';
     
@@ -121,7 +124,7 @@ const SessionForm: React.FC<SessionFormProps> = ({
       </div>
       
       <div className="row">
-        <div className="col-md-6">
+        <div className="col-md-4">
           <DateTimePicker 
             label="Date" 
             value={formData.date || ''} 
@@ -132,11 +135,18 @@ const SessionForm: React.FC<SessionFormProps> = ({
             }))} 
           />
         </div>
-        <div className="col-md-6 pt-md-0 pt-3">
+        <div className="col-md-4 pt-md-0 pt-3">
            <NumberInput 
             label="Visibility (m)" name="visibility" value={formData.visibility || 0} 
             onChange={(val) => setFormData(prev => ({ ...prev, visibility: val }))} 
             hint={errors.visibility}
+          />
+        </div>
+        <div className="col-md-4 pt-md-0 pt-3">
+           <NumberInput 
+            label="Wave Height (m)" name="wave_height" value={formData.wave_height || 0} 
+            onChange={(val) => setFormData(prev => ({ ...prev, wave_height: val }))} 
+            hint={errors.wave_height}
           />
         </div>
       </div>

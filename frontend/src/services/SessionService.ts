@@ -14,6 +14,7 @@ export interface SessionDetails {
   entry_time?: string | null;
   exit_time?: string | null;
   visibility?: number | null;
+  wave_height?: number | null;
   date?: string | null;
 }
 
